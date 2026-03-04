@@ -1568,31 +1568,57 @@ def delete_notification(notification_id):
 def process_notifications():
     from datetime import datetime
     now = datetime.now()
-    # Current time in "09:00 AM" or "9:00 AM" format. 
-    # Python's %I adds a leading zero (09:00 AM). 
-    # We strip it to match database format (9:00 AM).
-    current_time = now.strftime("%I:%M %p").lstrip("0")
+    # Current time in "09:00 AM" format.
+    current_time = now.strftime("%I:%M %p")
     current_day = now.day
     
-    print(f"--- Scheduler Running at {current_time} (System: {now.strftime('%I:%M %p')}, Day {current_day}) ---")
+    print(f"--- Scheduler Running at {current_time} (Day {current_day}) ---")
     
     conn = get_db_connection()
     if not conn: return
     cursor = conn.cursor(dictionary=True)
     try:
-        # Daily
-        cursor.execute("SELECT user_id FROM user_notifications WHERE type = 'daily' AND time_value = %s AND status = 1", (current_time,))
+        # Daily Reminders
+        cursor.execute("""
+            SELECT user_id FROM user_notifications 
+            WHERE type = 'daily' AND time_value = %s AND status = 1
+        """, (current_time,))
         daily_users = cursor.fetchall()
-        print(f"Found {len(daily_users)} daily reminders to send")
+        
         for row in daily_users:
-            insert_notification(row['user_id'], "Daily Tip", "Check out your daily financial tip!", "daily")
+            # Check if a daily notification was already sent today for this user
+            cursor.execute("""
+                SELECT id FROM notifications 
+                WHERE user_id = %s AND type = 'daily' AND DATE(created_at) = CURDATE()
+            """, (row['user_id'],))
             
-        # Monthly
-        cursor.execute("SELECT user_id FROM user_notifications WHERE type = 'monthly' AND day_value = %s AND time_value = %s AND status = 1", (current_day, current_time))
+            if not cursor.fetchone():
+                print(f"Sending daily reminder to user {row['user_id']}")
+                insert_notification(row['user_id'], "Daily Tip", "Check out your daily financial tip!", "daily")
+            else:
+                print(f"Daily reminder already sent to user {row['user_id']} today")
+            
+        # Monthly Reminders
+        cursor.execute("""
+            SELECT user_id FROM user_notifications 
+            WHERE type = 'monthly' AND day_value = %s AND time_value = %s AND status = 1
+        """, (current_day, current_time))
         monthly_users = cursor.fetchall()
-        print(f"Found {len(monthly_users)} monthly reminders to send")
+        
         for row in monthly_users:
-            insert_notification(row['user_id'], "Monthly Goal", "It's time to update your savings goal!", "monthly")
+            # Check if a monthly notification was already sent this month for this user
+            cursor.execute("""
+                SELECT id FROM notifications 
+                WHERE user_id = %s AND type = 'monthly' 
+                AND MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW())
+            """, (row['user_id'],))
+            
+            if not cursor.fetchone():
+                print(f"Sending monthly reminder to user {row['user_id']}")
+                insert_notification(row['user_id'], "Monthly Goal", "It's time to update your savings goal!", "monthly")
+            else:
+                print(f"Monthly reminder already sent to user {row['user_id']} this month")
+                
     except Exception as e:
         print(f"Scheduler Error: {e}")
     finally:
