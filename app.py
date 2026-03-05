@@ -1438,7 +1438,7 @@ def insert_notification(user_id, title, message, notif_type):
         return
     cursor = conn.cursor()
     try:
-        display_time = datetime.now().strftime("%I:%M %p")
+        display_time = datetime.now().strftime("%I:%M %p").lstrip('0')
         cursor.execute("""
             INSERT INTO notifications (user_id, title, message, time_value, type, is_unread, created_at)
             VALUES (%s, %s, %s, %s, %s, 1, NOW())
@@ -1568,8 +1568,8 @@ def delete_notification(notification_id):
 def process_notifications():
     from datetime import datetime
     now = datetime.now()
-    # Current time in "09:00 AM" format.
-    current_time = now.strftime("%I:%M %p")
+    # Current time in "9:00 AM" format (no leading zero).
+    current_time = now.strftime("%I:%M %p").lstrip('0')
     current_day = now.day
     
     print(f"--- Scheduler Running at {current_time} (Day {current_day}) ---")
