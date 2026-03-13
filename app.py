@@ -4,7 +4,7 @@ import json
 import requests
 import tempfile
 from io import BytesIO
-from flask import Flask, request, jsonify, session, send_file, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, send_file, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 import cloudscraper
 import mysql.connector
@@ -17,10 +17,10 @@ import numpy as np
 import random
 from flask_mail import Mail, Message
 from apscheduler.schedulers.background import BackgroundScheduler
-
+import google.generativeai as genai
 import matplotlib
 matplotlib.use("Agg")
-app = Flask(__name__) 
+app = Flask(__name__, template_folder='Web_application/templates', static_folder='Web_application/static') 
 app.secret_key = "supersecretkey"  # required for session
 # -----------------------------
 # 1️⃣ Database Connection 
@@ -31,7 +31,8 @@ def get_db_connection():
             host="localhost",
             user="root",
             password="",   # default XAMPP password is empty
-            database="elearning_db"
+            database="elearning_db",
+            connect_timeout=5  # Add timeout to prevent hanging
         )
 
         if conn.is_connected():
@@ -42,6 +43,241 @@ def get_db_connection():
     except Error as e:
         print("Error while connecting to MySQL:", e)
         return None
+    except Exception as e:
+        print("Unexpected error during DB connection:", e)
+        return None
+# -----------------------------
+# Web Render
+# -----------------------------
+@app.route("/dashboard", methods=["GET"])
+def dashboard():
+    if "user_id" not in session:
+        return redirect(url_for("auth"))
+    return render_template("dashboard.html", user_name=session.get("user_name"), user_id=session.get("user_id"))
+
+@app.route("/goals", methods=["GET"])
+def goals():
+    if "user_id" not in session:
+        return redirect(url_for("auth"))
+    return render_template("goals.html", user_name=session.get("user_name"), user_id=session.get("user_id"))
+
+@app.route("/tools", methods=["GET"])
+def tools():
+    return render_template("tools.html", user_name=session.get("user_name"), user_id=session.get("user_id"))
+
+@app.route("/learning_center", methods=["GET"])
+def learning_center():
+    if "user_id" not in session:
+        return redirect(url_for("auth"))
+    return render_template("learning_center.html", user_name=session.get("user_name"), user_id=session.get("user_id"))
+
+@app.route("/daily-insights", methods=["GET"])
+def daily_insights():
+    if "user_id" not in session:
+        return redirect(url_for("auth"))
+    return render_template("daily_insights.html", user_name=session.get("user_name"), user_id=session.get("user_id"))
+
+@app.route("/finbot", methods=["GET"])
+def finbot():
+    if "user_id" not in session:
+        return redirect(url_for("auth"))
+    return render_template("finbot.html", user_name=session.get("user_name"), user_id=session.get("user_id"))
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
+
+@app.route("/auth", methods=["GET"])
+def auth():
+    return render_template("auth.html")
+
+@app.route("/gold_screen", methods=["GET"])
+def gold_screen():
+    if "user_id" not in session:
+        return redirect(url_for("auth"))
+    return render_template("gold.html", user_name=session.get("user_name"), user_id=session.get("user_id"))
+
+@app.route("/silver_screen", methods=["GET"])
+def silver_screen():
+    if "user_id" not in session:
+        return redirect(url_for("auth"))
+    return render_template("silver.html", user_name=session.get("user_name"), user_id=session.get("user_id"))
+@app.route("/check-session", methods=["GET"])
+def check_session():
+    if "user_id" in session:
+        return jsonify({"logged_in": True, "user_id": session.get("user_id"), "user_name": session.get("user_name")})
+    return jsonify({"logged_in": False})
+
+@app.route("/")
+@app.route("/index", methods=["GET"])
+def index():
+    return render_template("index.html")
+
+@app.route("/profile", methods=["GET"])
+def profile():
+    if "user_id" not in session:
+        return redirect(url_for("auth"))
+    
+    user_id = session.get("user_id")
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT full_name, email, mobile, dob FROM register WHERE id = %s", (user_id,))
+    user_data = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+    
+    if not user_data:
+        return redirect(url_for("auth"))
+        
+    # Format DOB for display and input
+    dob_raw = ""
+    dob_display = "Not Set"
+    if user_data['dob']:
+        try:
+            # Check if dob is a date object or string
+            if isinstance(user_data['dob'], str):
+                dob_obj = datetime.strptime(user_data['dob'], "%Y-%m-%d")
+            else:
+                dob_obj = user_data['dob']
+            dob_raw = dob_obj.strftime("%Y-%m-%d")
+            dob_display = dob_obj.strftime("%b %d, %Y")
+        except:
+            dob_raw = str(user_data['dob'])
+            dob_display = str(user_data['dob'])
+
+    user = {
+        "full_name": user_data['full_name'],
+        "email": user_data['email'],
+        "mobile": user_data['mobile'],
+        "dob_raw": dob_raw,
+        "dob_display": dob_display
+    }
+    
+    return render_template("profile.html", user=user, user_name=session.get("user_name"), user_id=user_id)
+
+@app.route("/settings")
+def settings():
+    return redirect(url_for("profile"))
+@app.route("/api/health")
+def health_check():
+    status = {"status": "ok", "database": "unknown"}
+    try:
+        conn = get_db_connection()
+        if conn and conn.is_connected():
+            status["database"] = "connected"
+            conn.close()
+        else:
+            status["database"] = "disconnected"
+            status["status"] = "degraded"
+    except Exception as e:
+        status["database"] = f"error: {str(e)}"
+        status["status"] = "error"
+    
+    return jsonify(status), 200 if status["status"] == "ok" else 503
+
+# --------------------------------------------------
+# 🤖 FinBot (Gemini Chat API)
+# --------------------------------------------------
+genai.configure(api_key="AIzaSyCHri2Fr3idKk1EHcZ5f0Fg_YMXA-qRZt0")
+
+finbot_system_instruction = """
+You are FinBot, an AI assistant that is strictly limited to financial topics only.
+
+ALLOWED:
+- Personal finance (budgeting, savings, loans, EMIs, credit score)
+- Investments (stocks, mutual funds, SIP, bonds, gold, real estate basics)
+- Financial markets (NSE/BSE basics, indices, market trends)
+- Economics (inflation, GDP, interest rates, taxation concepts)
+- Banking & insurance (FD, RD, life insurance, health insurance)
+- Financial planning (retirement planning, compounding, wealth building)
+- Financial calculations (EMI, SIP, CAGR, ROI)
+
+RESTRICTED:
+You MUST refuse and decline ANY request that is NOT directly related to finance.
+This includes:
+- Programming/coding
+- Gaming, movies, entertainment
+- Politics, religion, sensitive topics
+- Medical/health advice
+- Personal opinions, emotional support
+- Non-financial general knowledge
+- Math problems unrelated to finance
+- Legal cases (unless it is financial compliance/Regulations)
+
+RESPONSE RULES:
+1. If the user asks something outside finance, immediately respond:
+   “I can only answer finance-related questions. Please ask something related to money, investment, banking, or financial learning.”
+
+2. Do NOT try to answer restricted questions. Do NOT give partial answers.
+
+3. Keep answers simple, short, structured, and correct.
+
+4. If the user asks ambiguous questions, ask them to relate it to finance.
+
+5. Never leave your financial domain under any circumstances.
+
+6. If user wishes as Hi, Hello, or any greetings, respond with a financial tip or fact instead of a normal greeting.
+"""
+
+generation_config = {
+  "temperature": 0.7,
+  "top_p": 0.95,
+  "top_k": 64,
+  "max_output_tokens": 8192,
+}
+
+finbot_model = genai.GenerativeModel(
+  model_name="gemini-2.5-flash",
+  generation_config=generation_config,
+  system_instruction=finbot_system_instruction
+)
+
+@app.route("/api/finbot-chat", methods=["POST"])
+def finbot_chat():
+    if "user_id" not in session:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+        
+    data = request.json
+    if not data or "message" not in data:
+        return jsonify({"status": "error", "message": "Message is required"}), 400
+        
+    user_message = data.get("message")
+    history_data = data.get("history", [])
+    
+    formatted_history = []
+    for msg in history_data:
+        # Convert frontend history format to Gemini format
+        role = "user" if msg.get("isUser") else "model"
+        formatted_history.append({
+            "role": role,
+            "parts": [msg.get("text")]
+        })
+        
+    try:
+        chat_session = finbot_model.start_chat(history=formatted_history)
+        response = chat_session.send_message(user_message)
+        
+        return jsonify({
+            "status": "success",
+            "response": response.text
+        })
+    except Exception as e:
+        error_message = str(e)
+        if "429" in error_message or "quota" in error_message.lower():
+            return jsonify({
+                "status": "error",
+                "message": "Today's Quota for the FinBot is completed. Please try again tomorrow.",
+                "response": "Today's Quota for the FinBot is completed. Please try again tomorrow."
+            }), 429
+        else:
+            return jsonify({
+                "status": "error",
+                "message": f"Something went wrong: {error_message}",
+                "response": f"I encountered an issue generating a response. Please try again later."
+            }), 500
 # -----------------------------
 # 1️⃣ Register 
 # -----------------------------
@@ -198,6 +434,12 @@ def login():
         }), 400
 
     conn = get_db_connection()
+    if not conn:
+        return jsonify({
+            "status": "error",
+            "message": "The system is currently unable to connect to the database. Please ensure your database server is running."
+        }), 503
+
     cursor = conn.cursor(dictionary=True)
 
     # -----------------------------
@@ -228,9 +470,15 @@ def login():
     cursor.close()
     conn.close()
 
+    # 5️⃣ Set Session
+    session["user_id"] = user["id"]
+    session["user_name"] = user["full_name"]
+    session["user_email"] = user["email"]
+
     return jsonify({
         "status": "success",
         "message": "Login successful",
+        "redirect": url_for("dashboard") if "dashboard" in app.view_functions else "dashboard.html",
         "user": {
             "id": user["id"],
             "full_name": user["full_name"],
@@ -1047,8 +1295,14 @@ def get_profile(user_id):
 # ----------------------------
 # Profile editing function
 # ----------------------------
-@app.route("/update-profile/<int:user_id>", methods=["PUT"])
-def update_profile(user_id):
+@app.route("/update-profile", methods=["POST"])
+@app.route("/update-profile/<int:user_id>", methods=["PUT", "POST"])
+def update_profile(user_id=None):
+    if user_id is None:
+        user_id = session.get("user_id")
+    
+    if not user_id:
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
 
     data = request.get_json(silent=True)
 
@@ -1158,6 +1412,12 @@ def update_profile(user_id):
 
     cursor.execute(query, tuple(update_values))
     conn.commit()
+
+    # Update session if name or email changed
+    if full_name:
+        session["user_name"] = full_name
+    if email:
+        session["user_email"] = email
 
     cursor.close()
     conn.close()
@@ -1384,58 +1644,88 @@ def silver_rate():
 @app.route('/progress/update', methods=['POST'])
 def update_progress():
     data = request.json
-    user_id = data['user_id']
-    article_no = data['article_no']  # frontend sends static article number
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    query = """
-        INSERT INTO user_article_progress (user_id, article_no, is_completed, completed_at)
-        VALUES (%s, %s, 1, NOW())
-        ON DUPLICATE KEY UPDATE is_completed=1, completed_at=NOW();
-    """
-
-    cursor.execute(query, (user_id, article_no))
-    conn.commit()
-
-    return jsonify({"status": "success"})
+    user_id = int(data['user_id'])
+    article_no = int(data['article_no'])  # frontend sends static article number
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        query = """
+            INSERT INTO user_article_progress (user_id, article_no, is_completed, completed_at)
+            VALUES (%s, %s, 1, NOW())
+            ON DUPLICATE KEY UPDATE is_completed=1, completed_at=NOW();
+        """
+        cursor.execute(query, (user_id, article_no))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        print(f"Error updating progress: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @app.route('/progress/<int:user_id>', methods=['GET'])
 def get_progress(user_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-    # 1. Fetch the actual article numbers that are completed
-    cursor.execute("""
-        SELECT article_no FROM user_article_progress
-        WHERE user_id=%s AND is_completed=1
-    """, (user_id,))
+        # 1. Fetch the actual article numbers that are completed
+        cursor.execute("""
+            SELECT article_no FROM user_article_progress
+            WHERE user_id=%s AND is_completed=1
+        """, (user_id,))
+        
+        # 2. Extract into a simple list [1, 2, 5, ...]
+        rows = cursor.fetchall()
+        completed_articles = [row[0] for row in rows]
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error fetching progress from DB: {e}")
+        completed_articles = []
+
+    # 3. Calculate stats (Dynamic total articles)
+    try:
+        import re
+        import os
+        template_path = os.path.join(app.root_path, 'Web_application', 'templates', 'learning_center.html')
+        with open(template_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            # Count articles using the pattern verified: id: X, title: "...", content:
+            # This regex specifically target article objects by looking for the 'content' field
+            total_articles = len(re.findall(r'id:\s*\d+,\s*title:\s*\"[^\"]*\",\s*content:', content))
+    except Exception as e:
+        print(f"Error calculating total articles: {e}")
+        total_articles = 0 # Fallback
     
-    # 2. Extract into a simple list [1, 2, 5, ...]
-    rows = cursor.fetchall()
-    completed_articles = [row[0] for row in rows]
-
-    # 3. Calculate stats
+    # Calculate stats
     completed_count = len(completed_articles)
-    total_articles = 84 
     
     # Avoid division by zero just in case
     progress = (completed_count / total_articles * 100) if total_articles > 0 else 0
 
     return jsonify({
+        "status": "success",
         "completed": completed_count,
         "total": total_articles,
         "progress_percent": round(progress, 2),
         "completed_articles": completed_articles
     })
-def insert_notification(user_id, title, message, notif_type):
+# --------------------------------------------------
+# Notifications 
+# --------------------------------------------------
+def insert_notification(user_id, title, message, notif_type, conn=None):
     """Internal helper to insert a notification into the database."""
     from datetime import datetime
-    conn = get_db_connection()
-    if not conn:
-        return
+    
+    should_close = False
+    if conn is None:
+        conn = get_db_connection()
+        if not conn:
+            return
+        should_close = True
+        
     cursor = conn.cursor()
     try:
         display_time = datetime.now().strftime("%I:%M %p").lstrip('0')
@@ -1448,11 +1738,9 @@ def insert_notification(user_id, title, message, notif_type):
         print(f"Error inserting notification: {e}")
     finally:
         cursor.close()
-        conn.close()
+        if should_close:
+            conn.close()
 
-# --------------------------------------------------
-# Notifications 
-# --------------------------------------------------
 @app.route("/enable-daily", methods=["POST"])
 def enable_daily():
     data = request.json
@@ -1594,7 +1882,7 @@ def process_notifications():
             
             if not cursor.fetchone():
                 print(f"Sending daily reminder to user {row['user_id']}")
-                insert_notification(row['user_id'], "Daily Tip", "Check out your daily financial tip!", "daily")
+                insert_notification(row['user_id'], "Daily Tip", "Check out your daily financial tip!", "daily", conn=conn)
             else:
                 print(f"Daily reminder already sent to user {row['user_id']} today")
             
@@ -1615,7 +1903,7 @@ def process_notifications():
             
             if not cursor.fetchone():
                 print(f"Sending monthly reminder to user {row['user_id']}")
-                insert_notification(row['user_id'], "Monthly Goal", "It's time to update your savings goal!", "monthly")
+                insert_notification(row['user_id'], "Monthly Goal", "It's time to update your savings goal!", "monthly", conn=conn)
             else:
                 print(f"Monthly reminder already sent to user {row['user_id']} this month")
                 
@@ -1652,9 +1940,6 @@ def trigger_scheduler():
     process_notifications()
     return jsonify({"status": "success", "message": "Scheduler triggered manually"})
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(process_notifications, 'interval', minutes=1)
-scheduler.start()
 
 
 @app.route("/test-notification", methods=["POST"])
@@ -1668,6 +1953,17 @@ def test_notification():
     return jsonify({"status": "success", "message": "Test notification created"})
 
 
+
+# --------------------------------------------------
+# SCHEDULER INITIALIZATION
+# --------------------------------------------------
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.add_job(func=process_notifications, trigger="interval", minutes=1)
+
+# Only start the scheduler once, even in Flask debug mode with the reloader
+if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug:
+    scheduler.start()
+    print("--- Notification Scheduler Started ---")
 
 # --------------------------------------------------
 # RUN SERVER

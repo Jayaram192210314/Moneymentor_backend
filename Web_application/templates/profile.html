@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Money Mentor</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap and Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logout_animation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #fcf4f7; }
+        .dashboard-container { display: flex; min-height: 100vh; }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 60px 20px 20px;
+            }
+        }
+        .logo-box-lg { width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header d-lg-none">
+        <a href="/dashboard" class="mobile-logo">
+            <div class="logo-box-lg" style="width: 32px; height: 32px; font-size: 1.1rem; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <span>Money Mentor</span>
+        </a>
+        <button class="mobile-toggle" id="sidebarToggle">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a class="navbar-brand d-flex align-items-center fw-bold mb-5" href="/index">
+                <div class="logo-box-lg mx-1 d-flex align-items-center justify-content-center me-2">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                Money Mentor
+            </a>
+            <nav>
+                <a href="/dashboard" class="sidebar-link" style="--clr: #3b82f6;"><span class="d-flex align-items-center"><i class="bi bi-grid-1x2 me-2"></i> Overview</span><b class="effect"></b></a>
+                <a href="/learning_center" class="sidebar-link" style="--clr: #8b5cf6;"><span class="d-flex align-items-center"><i class="bi bi-book me-2"></i> Learning Path</span><b class="effect"></b></a>
+                <a href="/tools" class="sidebar-link" style="--clr: #10b981;"><span class="d-flex align-items-center"><i class="bi bi-calculator me-2"></i> Calculators</span><b class="effect"></b></a>
+                <a href="/goals" class="sidebar-link" style="--clr: #f59e0b;"><span class="d-flex align-items-center"><i class="bi bi-graph-up me-2"></i> My Goals</span><b class="effect"></b></a>
+                <a href="/daily-insights" class="sidebar-link" style="--clr: #ec4899;"><span class="d-flex align-items-center"><i class="bi bi-lightbulb me-2"></i> Daily Tips</span><b class="effect"></b></a>
+                <a href="/finbot" class="sidebar-link" style="--clr: #06b6d4;"><span class="d-flex align-items-center"><i class="bi bi-robot me-2"></i> FinBot</span><b class="effect"></b></a>
+                <a href="/profile" class="sidebar-link active" style="--clr: #ef4444;"><span class="d-flex align-items-center"><i class="bi bi-person-circle me-2"></i> Profile</span><b class="effect"></b></a>
+
+                <button class="logoutButton" data-href="{{ url_for('logout') }}">
+                    <svg class="doorway" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <path class="bang"
+                            d="M40.5 43.7L26.6 31.4l-2.5 6.7zM41.9 50.4l-19.5-4-1.4 6.3zM40 57.4l-17.7 3.9 3.9 5.7z" />
+                    </svg>
+                    <svg class="figure" viewBox="0 0 100 100">
+                        <circle cx="52.1" cy="32.4" r="6.4" />
+                        <path
+                            d="M50.7 62.8c-1.2 2.5-3.6 5-7.2 4-3.2-.9-4.9-3.5-4-7.8.7-3.4 3.1-13.8 4.1-15.8 1.7-3.4 1.6-4.6 7-3.7 4.3.7 4.6 2.5 4.3 5.4-.4 3.7-2.8 15.1-4.2 17.9z" />
+                        <g class="arm1">
+                            <path
+                                d="M55.5 56.5l-6-9.5c-1-1.5-.6-3.5.9-4.4 1.5-1 3.7-1.1 4.6.4l6.1 10c1 1.5.3 3.5-1.1 4.4-1.5.9-3.5.5-4.5-.9z" />
+                            <path class="wrist1"
+                                d="M69.4 59.9L58.1 58c-1.7-.3-2.9-1.9-2.6-3.7.3-1.7 1.9-2.9 3.7-2.6l11.4 1.9c1.7.3 2.9 1.9 2.6 3.7-.4 1.7-2 2.9-3.8 2.6z" />
+                        </g>
+                        <g class="arm2">
+                            <path
+                                d="M34.2 43.6L45 40.3c1.7-.6 3.5.3 4 2 .6 1.7-.3 4-2 4.5l-10.8 2.8c-1.7.6-3.5-.3-4-2-.6-1.6.3-3.4 2-4z" />
+                            <path class="wrist2"
+                                d="M27.1 56.2L32 45.7c.7-1.6 2.6-2.3 4.2-1.6 1.6.7 2.3 2.6 1.6 4.2L33 58.8c-.7 1.6-2.6 2.3-4.2 1.6-1.7-.7-2.4-2.6-1.7-4.2z" />
+                        </g>
+                        <g class="leg1">
+                            <path
+                                d="M52.1 73.2s-7-5.7-7.9-6.5c-.9-.9-1.2-3.5-.1-4.9 1.1-1.4 3.8-1.9 5.2-.9l7.9 7c1.4 1.1 1.7 3.5.7 4.9-1.1 1.4-4.4 1.5-5.8.4z" />
+                            <path class="calf1"
+                                d="M52.6 84.4l-1-12.8c-.1-1.9 1.5-3.6 3.5-3.7 2-.1 3.7 1.4 3.8 3.4l1 12.8c.1 1.9-1.5 3.6-3.5 3.7-2 0-3.7-1.5-3.8-3.4z" />
+                        </g>
+                        <g class="leg2">
+                            <path
+                                d="M37.8 72.7s1.3-10.2 1.6-11.4 2.4-2.8 4.1-2.6c1.7.2 3.6 2.3 3.4 4l-1.8 11.1c-.2 1.7-1.7 3.3-3.4 3.1-1.8-.2-4.1-2.4-3.9-4.2z" />
+                            <path class="calf2"
+                                d="M29.5 82.3l9.6-10.9c1.3-1.4 3.6-1.5 5.1-.1 1.5 1.4.4 4.9-.9 6.3l-8.5 9.6c-1.3 1.4-3.6 1.5-5.1.1-1.4-1.3-1.5-3.5-.2-5z" />
+                        </g>
+                    </svg>
+                    <svg class="door" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <circle cx="66" cy="50" r="3.7" />
+                    </svg>
+                    <span class="button-text">Logout</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="profile-container">
+                <div class="profile-header-card">
+                    <div class="header-content text-center">
+                        <h1 class="fw-800 mb-2">Account Center</h1>
+                    </div>
+                </div>
+
+                <div class="main-profile-card">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-circle">
+                            {{ user.full_name[0] | upper }}
+                        </div>
+                        <div class="online-status"></div>
+                    </div>
+
+                    <div class="text-center mb-5">
+                        <h2 class="fw-700 mb-1" id="profile-name-header">{{ user.full_name }}</h2>
+                        <p class="text-muted">{{ user.email }}</p>
+                    </div>
+
+                    <form id="profileForm">
+                        <div class="info-grid">
+                            <!-- Full Name -->
+                            <div class="info-item">
+                                <label class="label-text">Full Name</label>
+                                <div class="value-display">
+                                    <span class="value-text" id="view-full_name">{{ user.full_name }}</span>
+                                    <input type="text" class="edit-input" name="full_name" value="{{ user.full_name }}" required>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="info-item">
+                                <label class="label-text">Email Address</label>
+                                <div class="value-display">
+                                    <span class="value-text" id="view-email">{{ user.email }}</span>
+                                    <input type="email" class="edit-input" name="email" value="{{ user.email }}" required>
+                                </div>
+                            </div>
+
+                            <!-- Phone -->
+                            <div class="info-item">
+                                <label class="label-text">Mobile Number</label>
+                                <div class="value-display">
+                                    <span class="value-text" id="view-mobile">{{ user.mobile }}</span>
+                                    <input type="tel" class="edit-input" name="mobile" value="{{ user.mobile }}" pattern="[0-9]{10}" required>
+                                </div>
+                            </div>
+
+                            <!-- DOB -->
+                            <div class="info-item">
+                                <label class="label-text">Date of Birth</label>
+                                <div class="value-display">
+                                    <span class="value-text" id="view-dob">{{ user.dob_display }}</span>
+                                    <input type="date" class="edit-input" name="dob" value="{{ user.dob_raw }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions">
+                            <button type="button" class="btn-premium btn-edit" id="btn-edit">
+                                <i class="bi bi-pencil-square"></i> Edit Profile
+                            </button>
+                            <button type="submit" class="btn-premium btn-save" id="btn-save">
+                                <i class="bi bi-check-circle"></i> Save Changes
+                            </button>
+                            <button type="button" class="btn-premium btn-cancel" id="btn-cancel">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="bi bi-info-circle-fill me-2 text-primary"></i>
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const form = document.getElementById('profileForm');
+        const btnEdit = document.getElementById('btn-edit');
+        const btnSave = document.getElementById('btn-save');
+        const btnCancel = document.getElementById('btn-cancel');
+        const displays = document.querySelectorAll('.value-text');
+        const inputs = document.querySelectorAll('.edit-input');
+        const toastEl = document.getElementById('liveToast');
+        const toast = new bootstrap.Toast(toastEl);
+
+        function showToast(msg) {
+            document.getElementById('toast-message').innerText = msg;
+            toast.show();
+        }
+
+        btnEdit.addEventListener('click', () => {
+            displays.forEach(d => d.style.display = 'none');
+            inputs.forEach(i => i.style.display = 'block');
+            btnEdit.style.display = 'none';
+            btnSave.style.display = 'flex';
+            btnCancel.style.display = 'flex';
+        });
+
+        btnCancel.addEventListener('click', () => {
+            displays.forEach(d => d.style.display = 'block');
+            inputs.forEach(i => i.style.display = 'none');
+            btnEdit.style.display = 'flex';
+            btnSave.style.display = 'none';
+            btnCancel.style.display = 'none';
+            form.reset();
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+            try {
+                const res = await fetch('/update-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                
+                if (result.status === 'success') {
+                    showToast('Profile updated successfully! Refreshing details...');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast('Error: ' + result.message);
+                }
+            } catch (err) {
+                showToast('Something went wrong. Please try again.');
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = '<i class="bi bi-check-circle"></i> Save Changes';
+            }
+        });
+    </script>
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='logout_animation.js') }}"></script>
+</body>
+
+</html>

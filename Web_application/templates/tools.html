@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Calculators - Money Mentor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logout_animation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --emi-start: #3b82f6;
+            --emi-end: #06b6d4;
+            --sip-start: #8b5cf6;
+            --sip-end: #6366f1;
+            --tax-start: #f59e0b;
+            --tax-end: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f1f5f9;
+            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding-top: 60px;
+            }
+        }
+
+        .logo-box-lg {
+            width: 40px;
+            height: 40px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* ── Header ── */
+        .tools-header-bg {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 0 0 32px 32px;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tools-header-bg::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tools-header-bg::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            right: 80px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .header-icon-box {
+            width: 56px;
+            height: 56px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* ── Tab Pills ── */
+        .calc-page {
+            padding: 28px 32px;
+        }
+
+        .tool-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            background: #fff;
+            padding: 8px;
+            border-radius: 20px;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+            flex-wrap: wrap;
+        }
+
+        .tool-tab {
+            flex: 1;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #64748b;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s cubic-bezier(.4, 0, .2, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tool-tab .tab-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            background: #f1f5f9;
+            transition: all 0.3s;
+        }
+
+        .tool-tab.active[data-tool="emi"] {
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            color: white;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+        }
+
+        .tool-tab.active[data-tool="sip"] {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.35);
+        }
+
+        .tool-tab.active[data-tool="tax"] {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+        }
+
+        .tool-tab.active .tab-icon {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+        }
+
+        .tool-tab:not(.active):hover {
+            background: #f8fafc;
+            color: #1e293b;
+        }
+
+        /* ── Calculator Layout ── */
+        .calc-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ── Result Card ── */
+        .result-card {
+            border-radius: 28px;
+            padding: 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .result-card::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .result-card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .emi-gradient {
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        }
+
+        .sip-gradient {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        }
+
+        .tax-gradient {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+        }
+
+        .result-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+        }
+
+        .result-main-value {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin: 8px 0 4px;
+            letter-spacing: -0.02em;
+        }
+
+        .result-sub {
+            font-size: 0.8rem;
+            opacity: 0.75;
+            font-weight: 500;
+        }
+
+        .result-divider {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 24px 0;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 14px 16px;
+            backdrop-filter: blur(4px);
+        }
+
+        .stat-box-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            opacity: 0.75;
+            font-weight: 600;
+        }
+
+        .stat-box-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-top: 4px;
+        }
+
+        /* Visual bar for SIP */
+        .visual-bar-wrap {
+            margin-top: 20px;
+        }
+
+        .visual-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            opacity: 0.8;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .visual-bar-bg {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .visual-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, 0.85);
+            transition: width 0.6s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        /* Effective rate badge */
+        .eff-rate-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 99px;
+            padding: 4px 14px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        /* Tax 3-col breakdown */
+        .stats-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* ── Input Panel ── */
+        .input-panel {
+            background: #fff;
+            border-radius: 28px;
+            padding: 28px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .input-panel-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .input-item {
+            margin-bottom: 24px;
+        }
+
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .input-lbl {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .input-val-box {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 4px 12px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1e293b;
+            min-width: 80px;
+            text-align: right;
+            transition: border-color 0.2s;
+        }
+
+        .input-val-box:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+
+        /* Custom range slider */
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 99px;
+            outline: none;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        input[type="range"].emi-range {
+            background: linear-gradient(to right, #3b82f6 var(--pct, 50%), #e2e8f0 var(--pct, 50%));
+        }
+
+        input[type="range"].sip-range {
+            background: linear-gradient(to right, #8b5cf6 var(--pct, 50%), #e2e8f0 var(--pct, 50%));
+        }
+
+        input[type="range"].tax-range {
+            background: linear-gradient(to right, #f59e0b var(--pct, 50%), #e2e8f0 var(--pct, 50%));
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #6366f1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.15s, border-color 0.2s;
+        }
+
+        input[type="range"].emi-range::-webkit-slider-thumb {
+            border-color: #3b82f6;
+        }
+
+        input[type="range"].sip-range::-webkit-slider-thumb {
+            border-color: #8b5cf6;
+        }
+
+        input[type="range"].tax-range::-webkit-slider-thumb {
+            border-color: #f59e0b;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* ── Regime Switcher ── */
+        .regime-switcher {
+            display: flex;
+            background: #fef3c7;
+            padding: 5px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            gap: 4px;
+        }
+
+        .regime-btn {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #92400e;
+            background: transparent;
+            transition: all 0.25s;
+            cursor: pointer;
+        }
+
+        .regime-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        }
+
+        .small-caption {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* ── Animated number update ── */
+        @keyframes popIn {
+            0% {
+                transform: scale(0.92);
+                opacity: 0.6;
+            }
+
+            60% {
+                transform: scale(1.04);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .pop {
+            animation: popIn 0.3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        /* Mobile */
+        @media (max-width: 900px) {
+            .calc-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .calc-page {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header d-lg-none">
+        <a href="/dashboard" class="mobile-logo">
+            <div class="logo-box-lg" style="width: 32px; height: 32px; font-size: 1.1rem; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <span>Money Mentor</span>
+        </a>
+        <button class="mobile-toggle" id="sidebarToggle">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a class="navbar-brand d-flex align-items-center fw-bold mb-5" href="/index"
+                style="text-decoration: none; color: #1e293b;">
+                <div class="logo-box-lg mx-1 d-flex align-items-center justify-content-center me-2">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                Money Mentor
+            </a>
+            <nav>
+                <a href="/dashboard" class="sidebar-link" style="--clr: #3b82f6;"><span
+                        class="d-flex align-items-center"><i class="bi bi-grid-1x2 me-2"></i> Overview</span><b
+                        class="effect"></b></a>
+                <a href="/learning_center" class="sidebar-link" style="--clr: #8b5cf6;"><span
+                        class="d-flex align-items-center"><i class="bi bi-book me-2"></i> Learning Path</span><b
+                        class="effect"></b></a>
+                <a href="/tools" class="sidebar-link active" style="--clr: #10b981;"><span
+                        class="d-flex align-items-center"><i class="bi bi-calculator me-2"></i> Calculators</span><b
+                        class="effect"></b></a>
+                <a href="/goals" class="sidebar-link" style="--clr: #f59e0b;"><span class="d-flex align-items-center"><i
+                            class="bi bi-graph-up me-2"></i> My Goals</span><b class="effect"></b></a>
+                <a href="/daily-insights" class="sidebar-link" style="--clr: #ec4899;"><span
+                        class="d-flex align-items-center"><i class="bi bi-lightbulb me-2"></i> Daily Tips</span><b
+                        class="effect"></b></a>
+                <a href="/finbot" class="sidebar-link" style="--clr: #06b6d4;"><span
+                        class="d-flex align-items-center"><i class="bi bi-robot me-2"></i> FinBot</span><b
+                        class="effect"></b></a>
+                <a href="/profile" class="sidebar-link" style="--clr: #ef4444;"><span
+                        class="d-flex align-items-center"><i class="bi bi-person-circle me-2"></i> Profile</span><b
+                        class="effect"></b></a>
+
+                <button class="logoutButton" data-href="{{ url_for('logout') }}">
+                    <svg class="doorway" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <path class="bang"
+                            d="M40.5 43.7L26.6 31.4l-2.5 6.7zM41.9 50.4l-19.5-4-1.4 6.3zM40 57.4l-17.7 3.9 3.9 5.7z" />
+                    </svg>
+                    <svg class="figure" viewBox="0 0 100 100">
+                        <circle cx="52.1" cy="32.4" r="6.4" />
+                        <path
+                            d="M50.7 62.8c-1.2 2.5-3.6 5-7.2 4-3.2-.9-4.9-3.5-4-7.8.7-3.4 3.1-13.8 4.1-15.8 1.7-3.4 1.6-4.6 7-3.7 4.3.7 4.6 2.5 4.3 5.4-.4 3.7-2.8 15.1-4.2 17.9z" />
+                        <g class="arm1">
+                            <path
+                                d="M55.5 56.5l-6-9.5c-1-1.5-.6-3.5.9-4.4 1.5-1 3.7-1.1 4.6.4l6.1 10c1 1.5.3 3.5-1.1 4.4-1.5.9-3.5.5-4.5-.9z" />
+                            <path class="wrist1"
+                                d="M69.4 59.9L58.1 58c-1.7-.3-2.9-1.9-2.6-3.7.3-1.7 1.9-2.9 3.7-2.6l11.4 1.9c1.7.3 2.9 1.9 2.6 3.7-.4 1.7-2 2.9-3.8 2.6z" />
+                        </g>
+                        <g class="arm2">
+                            <path
+                                d="M34.2 43.6L45 40.3c1.7-.6 3.5.3 4 2 .6 1.7-.3 4-2 4.5l-10.8 2.8c-1.7.6-3.5-.3-4-2-.6-1.6.3-3.4 2-4z" />
+                            <path class="wrist2"
+                                d="M27.1 56.2L32 45.7c.7-1.6 2.6-2.3 4.2-1.6 1.6.7 2.3 2.6 1.6 4.2L33 58.8c-.7 1.6-2.6 2.3-4.2 1.6-1.7-.7-2.4-2.6-1.7-4.2z" />
+                        </g>
+                        <g class="leg1">
+                            <path
+                                d="M52.1 73.2s-7-5.7-7.9-6.5c-.9-.9-1.2-3.5-.1-4.9 1.1-1.4 3.8-1.9 5.2-.9l7.9 7c1.4 1.1 1.7 3.5.7 4.9-1.1 1.4-4.4 1.5-5.8.4z" />
+                            <path class="calf1"
+                                d="M52.6 84.4l-1-12.8c-.1-1.9 1.5-3.6 3.5-3.7 2-.1 3.7 1.4 3.8 3.4l1 12.8c.1 1.9-1.5 3.6-3.5 3.7-2 0-3.7-1.5-3.8-3.4z" />
+                        </g>
+                        <g class="leg2">
+                            <path
+                                d="M37.8 72.7s1.3-10.2 1.6-11.4 2.4-2.8 4.1-2.6c1.7.2 3.6 2.3 3.4 4l-1.8 11.1c-.2 1.7-1.7 3.3-3.4 3.1-1.8-.2-4.1-2.4-3.9-4.2z" />
+                            <path class="calf2"
+                                d="M29.5 82.3l9.6-10.9c1.3-1.4 3.6-1.5 5.1-.1 1.5 1.4.4 4.9-.9 6.3l-8.5 9.6c-1.3 1.4-3.6 1.5-5.1.1-1.4-1.3-1.5-3.5-.2-5z" />
+                        </g>
+                    </svg>
+                    <svg class="door" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <circle cx="66" cy="50" r="3.7" />
+                    </svg>
+                    <span class="button-text">Logout</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="tools-header-bg" id="toolsHeader">
+                <div class="d-flex align-items-center gap-3" style="position:relative;z-index:1;">
+                    <div class="header-icon-box">
+                        <i class="bi bi-calculator-fill"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-0" style="font-size:1.6rem;">Financial Calculators</h2>
+                        <p class="mb-0" style="opacity:0.85;font-size:0.9rem;">Make smarter money decisions</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calc-page">
+
+                <!-- Tab Pills -->
+                <div class="tool-tabs">
+                    <button class="tool-tab active" data-tool="emi" onclick="switchTool('emi')">
+                        <div class="tab-icon"><i class="bi bi-calculator-fill"></i></div>
+                        EMI Calculator
+                    </button>
+                    <button class="tool-tab" data-tool="sip" onclick="switchTool('sip')">
+                        <div class="tab-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                        SIP Calculator
+                    </button>
+                    <button class="tool-tab" data-tool="tax" onclick="switchTool('tax')">
+                        <div class="tab-icon"><i class="bi bi-receipt-cutoff"></i></div>
+                        Tax Calculator
+                    </button>
+                </div>
+
+                <!-- ── EMI Section ── -->
+                <div id="section-emi" class="tool-section">
+                    <div class="calc-layout">
+                        <!-- Result -->
+                        <div class="result-card emi-gradient">
+                            <div class="result-label">Monthly EMI</div>
+                            <div class="result-main-value" id="emi-monthly">₹0</div>
+                            <div class="result-sub">Home / Car / Personal Loan</div>
+                            <hr class="result-divider">
+                            <div class="stats-row">
+                                <div class="stat-box">
+                                    <div class="stat-box-label">Total Interest</div>
+                                    <div class="stat-box-value" id="emi-interest">₹0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-box-label">Total Payment</div>
+                                    <div class="stat-box-value" id="emi-total-payment">₹0</div>
+                                </div>
+                            </div>
+                            <!-- Interest vs Principal bar -->
+                            <div class="visual-bar-wrap">
+                                <div class="visual-bar-label">
+                                    <span>Principal</span><span>Interest</span>
+                                </div>
+                                <div class="visual-bar-bg">
+                                    <div class="visual-bar-fill" id="emi-principal-bar" style="width:60%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inputs -->
+                        <div class="input-panel">
+                            <div class="input-panel-title">Loan Parameters</div>
+
+                            <div class="input-item">
+                                <div class="input-row">
+                                    <label class="input-lbl">Loan Amount</label>
+                                    <input class="input-val-box" id="emi-loan-display" type="text" value="₹10,00,000"
+                                        onchange="syncFromDisplay('emi-loan','emi-loan-display','emi-loan-slider',100000,10000000,'₹',true); calculateEMI();">
+                                </div>
+                                <input type="range" class="emi-range" id="emi-loan-slider" min="100000" max="10000000"
+                                    step="50000" value="1000000"
+                                    oninput="syncSlider(this,'emi-loan','emi-loan-display','₹',true); calculateEMI();">
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94a3b8;margin-top:4px;">
+                                    <span>₹1L</span><span>₹1Cr</span>
+                                </div>
+                            </div>
+
+                            <div class="input-item">
+                                <div class="input-row">
+                                    <label class="input-lbl">Interest Rate</label>
+                                    <input class="input-val-box" id="emi-rate-display" type="text" value="10.5%"
+                                        onchange="syncFromDisplay('emi-rate','emi-rate-display','emi-rate-slider',5,24,'',false); calculateEMI();">
+                                </div>
+                                <input type="range" class="emi-range" id="emi-rate-slider" min="5" max="24" step="0.1"
+                                    value="10.5"
+                                    oninput="syncSlider(this,'emi-rate','emi-rate-display','%',false); calculateEMI();">
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94a3b8;margin-top:4px;">
+                                    <span>5%</span><span>24%</span>
+                                </div>
+                            </div>
+
+                            <div class="input-item">
+                                <div class="input-row">
+                                    <label class="input-lbl">Loan Tenure</label>
+                                    <input class="input-val-box" id="emi-tenure-display" type="text" value="5 yrs"
+                                        onchange="syncFromDisplay('emi-tenure','emi-tenure-display','emi-tenure-slider',1,30,' yrs',false); calculateEMI();">
+                                </div>
+                                <input type="range" class="emi-range" id="emi-tenure-slider" min="1" max="30" step="1"
+                                    value="5"
+                                    oninput="syncSlider(this,'emi-tenure','emi-tenure-display',' yrs',false); calculateEMI();">
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94a3b8;margin-top:4px;">
+                                    <span>1 yr</span><span>30 yrs</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── SIP Section ── -->
+                <div id="section-sip" class="tool-section d-none">
+                    <div class="calc-layout">
+                        <!-- Result -->
+                        <div class="result-card sip-gradient">
+                            <div class="result-label">Total Corpus</div>
+                            <div class="result-main-value" id="sip-total">₹0</div>
+                            <div class="result-sub">Estimated maturity value</div>
+                            <hr class="result-divider">
+                            <div class="stats-row">
+                                <div class="stat-box">
+                                    <div class="stat-box-label">Amount Invested</div>
+                                    <div class="stat-box-value" id="sip-invested">₹0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-box-label">Est. Returns</div>
+                                    <div class="stat-box-value" id="sip-returns">₹0</div>
+                                </div>
+                            </div>
+                            <!-- Returns % bar -->
+                            <div class="visual-bar-wrap">
+                                <div class="visual-bar-label">
+                                    <span>Invested</span><span>Returns</span>
+                                </div>
+                                <div class="visual-bar-bg">
+                                    <div class="visual-bar-fill" id="sip-invested-bar" style="width:50%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inputs -->
+                        <div class="input-panel">
+                            <div class="input-panel-title">SIP Parameters</div>
+
+                            <div class="input-item">
+                                <div class="input-row">
+                                    <label class="input-lbl">Monthly Investment</label>
+                                    <input class="input-val-box" id="sip-amount-display" type="text" value="₹5,000"
+                                        onchange="syncFromDisplay('sip-amount','sip-amount-display','sip-amount-slider',500,100000,'₹',true); calculateSIP();">
+                                </div>
+                                <input type="range" class="sip-range" id="sip-amount-slider" min="500" max="100000"
+                                    step="500" value="5000"
+                                    oninput="syncSlider(this,'sip-amount','sip-amount-display','₹',true); calculateSIP();">
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94a3b8;margin-top:4px;">
+                                    <span>₹500</span><span>₹1L</span>
+                                </div>
+                            </div>
+
+                            <div class="input-item">
+                                <div class="input-row">
+                                    <label class="input-lbl">Expected Return Rate</label>
+                                    <input class="input-val-box" id="sip-rate-display" type="text" value="12%"
+                                        onchange="syncFromDisplay('sip-rate','sip-rate-display','sip-rate-slider',1,30,'%',false); calculateSIP();">
+                                </div>
+                                <input type="range" class="sip-range" id="sip-rate-slider" min="1" max="30" step="0.5"
+                                    value="12"
+                                    oninput="syncSlider(this,'sip-rate','sip-rate-display','%',false); calculateSIP();">
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94a3b8;margin-top:4px;">
+                                    <span>1%</span><span>30%</span>
+                                </div>
+                            </div>
+
+                            <div class="input-item">
+                                <div class="input-row">
+                                    <label class="input-lbl">Time Period</label>
+                                    <input class="input-val-box" id="sip-years-display" type="text" value="10 yrs"
+                                        onchange="syncFromDisplay('sip-years','sip-years-display','sip-years-slider',1,40,' yrs',false); calculateSIP();">
+                                </div>
+                                <input type="range" class="sip-range" id="sip-years-slider" min="1" max="40" step="1"
+                                    value="10"
+                                    oninput="syncSlider(this,'sip-years','sip-years-display',' yrs',false); calculateSIP();">
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94a3b8;margin-top:4px;">
+                                    <span>1 yr</span><span>40 yrs</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Tax Section ── -->
+                <div id="section-tax" class="tool-section d-none">
+                    <div class="calc-layout">
+                        <!-- Result -->
+                        <div class="result-card tax-gradient">
+                            <div class="result-label">Total Tax Payable</div>
+                            <div class="result-main-value" id="tax-total">₹0</div>
+                            <div class="eff-rate-badge" id="tax-effective-rate">
+                                <i class="bi bi-percent"></i> Effective Rate: 0.0%
+                            </div>
+                            <hr class="result-divider">
+                            <div class="stats-row-3">
+                                <div class="stat-box">
+                                    <div class="stat-box-label">Taxable Income</div>
+                                    <div class="stat-box-value" style="font-size:1rem;" id="tax-taxable">₹0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-box-label">Deductions</div>
+                                    <div class="stat-box-value" style="font-size:1rem;" id="tax-deductions">₹0</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-box-label">Cess 4%</div>
+                                    <div class="stat-box-value" style="font-size:1rem;" id="tax-cess">₹0</div>
+                                </div>
+                            </div>
+                            <!-- Tax vs Take-home bar -->
+                            <div class="visual-bar-wrap">
+                                <div class="visual-bar-label">
+                                    <span>Take-home</span><span>Tax</span>
+                                </div>
+                                <div class="visual-bar-bg">
+                                    <div class="visual-bar-fill" id="tax-takehome-bar" style="width:80%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inputs -->
+                        <div class="input-panel">
+                            <div class="input-panel-title">Tax Parameters</div>
+
+                            <!-- Regime switcher -->
+                            <div class="regime-switcher">
+                                <button class="regime-btn active" onclick="switchRegime('new')">⚡ New Regime</button>
+                                <button class="regime-btn" onclick="switchRegime('old')">📋 Old Regime</button>
+                            </div>
+
+                            <div class="input-item">
+                                <div class="input-row">
+                                    <label class="input-lbl">Annual Income</label>
+                                    <input class="input-val-box" id="tax-income-display" type="text" value="₹12,00,000"
+                                        onchange="syncFromDisplay('tax-income','tax-income-display','tax-income-slider',100000,5000000,'₹',true); calculateTax();">
+                                </div>
+                                <input type="range" class="tax-range" id="tax-income-slider" min="100000" max="5000000"
+                                    step="50000" value="1200000"
+                                    oninput="syncSlider(this,'tax-income','tax-income-display','₹',true); calculateTax();">
+                                <div
+                                    style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94a3b8;margin-top:4px;">
+                                    <span>₹1L</span><span>₹50L</span>
+                                </div>
+                            </div>
+
+                            <div id="old-regime-inputs" class="d-none">
+                                <div class="input-item">
+                                    <div class="input-row">
+                                        <label class="input-lbl">Section 80C</label>
+                                        <input class="input-val-box" id="tax-80c-display" type="text" value="₹1,50,000"
+                                            onchange="syncFromDisplay('tax-80c','tax-80c-display','tax-80c-slider',0,150000,'₹',true); calculateTax();">
+                                    </div>
+                                    <input type="range" class="tax-range" id="tax-80c-slider" min="0" max="150000"
+                                        step="5000" value="150000"
+                                        oninput="syncSlider(this,'tax-80c','tax-80c-display','₹',true); calculateTax();">
+                                    <p class="small-caption">PPF, ELSS, LIC, etc. (Max ₹1.5L)</p>
+                                </div>
+
+                                <div class="input-item">
+                                    <div class="input-row">
+                                        <label class="input-lbl">Section 80D</label>
+                                        <input class="input-val-box" id="tax-80d-display" type="text" value="₹25,000"
+                                            onchange="syncFromDisplay('tax-80d','tax-80d-display','tax-80d-slider',0,75000,'₹',true); calculateTax();">
+                                    </div>
+                                    <input type="range" class="tax-range" id="tax-80d-slider" min="0" max="75000"
+                                        step="5000" value="25000"
+                                        oninput="syncSlider(this,'tax-80d','tax-80d-display','₹',true); calculateTax();">
+                                    <p class="small-caption">Health Insurance (Max ₹75k)</p>
+                                </div>
+
+                                <div class="input-item">
+                                    <div class="input-row">
+                                        <label class="input-lbl">HRA Exemption</label>
+                                        <input class="input-val-box" id="tax-hra-display" type="text" value="₹0"
+                                            onchange="syncFromDisplay('tax-hra','tax-hra-display','tax-hra-slider',0,500000,'₹',true); calculateTax();">
+                                    </div>
+                                    <input type="range" class="tax-range" id="tax-hra-slider" min="0" max="500000"
+                                        step="10000" value="0"
+                                        oninput="syncSlider(this,'tax-hra','tax-hra-display','₹',true); calculateTax();">
+                                </div>
+                            </div><!-- /old-regime-inputs -->
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /calc-page -->
+        </main>
+    </div>
+
+    <!-- Hidden number inputs used by calculation logic -->
+    <input type="hidden" id="emi-loan" value="1000000">
+    <input type="hidden" id="emi-rate" value="10.5">
+    <input type="hidden" id="emi-tenure" value="5">
+    <input type="hidden" id="sip-amount" value="5000">
+    <input type="hidden" id="sip-rate" value="12">
+    <input type="hidden" id="sip-years" value="10">
+    <input type="hidden" id="tax-income" value="1200000">
+    <input type="hidden" id="tax-80c" value="150000">
+    <input type="hidden" id="tax-80d" value="25000">
+    <input type="hidden" id="tax-hra" value="0">
+
+    <script>
+        let currentRegime = 'new';
+
+        /* ── Slider / Display sync ── */
+        function updateSliderFill(slider) {
+            const min = parseFloat(slider.min);
+            const max = parseFloat(slider.max);
+            const val = parseFloat(slider.value);
+            const pct = ((val - min) / (max - min) * 100).toFixed(1) + '%';
+            slider.style.setProperty('--pct', pct);
+        }
+
+        function syncSlider(slider, hiddenId, displayId, suffix, inr) {
+            const val = parseFloat(slider.value);
+            document.getElementById(hiddenId).value = val;
+            document.getElementById(displayId).value = inr
+                ? suffix + val.toLocaleString('en-IN')
+                : val + suffix;
+            updateSliderFill(slider);
+        }
+
+        function syncFromDisplay(hiddenId, displayId, sliderId, min, max, suffix, inr) {
+            let raw = document.getElementById(displayId).value
+                .replace(/[₹,%a-zA-Z\s,]/g, '');
+            let val = parseFloat(raw) || min;
+            val = Math.min(max, Math.max(min, val));
+            document.getElementById(hiddenId).value = val;
+            const slider = document.getElementById(sliderId);
+            if (slider) { slider.value = val; updateSliderFill(slider); }
+            document.getElementById(displayId).value = inr
+                ? suffix + val.toLocaleString('en-IN')
+                : val + suffix;
+        }
+
+        /* ── Tab switch ── */
+        function switchTool(tool) {
+            document.querySelectorAll('.tool-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tool-tab[data-tool="${tool}"]`).classList.add('active');
+            document.querySelectorAll('.tool-section').forEach(s => s.classList.add('d-none'));
+            document.getElementById(`section-${tool}`).classList.remove('d-none');
+
+            const header = document.getElementById('toolsHeader');
+            const icons = { emi: 'bi-calculator-fill', sip: 'bi-graph-up-arrow', tax: 'bi-receipt-cutoff' };
+            const grads = {
+                emi: 'linear-gradient(135deg,#3b82f6,#06b6d4)',
+                sip: 'linear-gradient(135deg,#8b5cf6,#6366f1)',
+                tax: 'linear-gradient(135deg,#f59e0b,#ef4444)'
+            };
+            header.style.background = grads[tool];
+            header.querySelector('i').className = `bi ${icons[tool]}`;
+        }
+
+        /* ── Regime switch ── */
+        function switchRegime(regime) {
+            currentRegime = regime;
+            document.querySelectorAll('.regime-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.regime-btn[onclick="switchRegime('${regime}')"]`).classList.add('active');
+            const oldInputs = document.getElementById('old-regime-inputs');
+            if (regime === 'old') oldInputs.classList.remove('d-none');
+            else oldInputs.classList.add('d-none');
+            calculateTax();
+        }
+
+        /* ── Formatting ── */
+        function formatCurrency(num) {
+            if (num >= 10000000) return '₹' + (num / 10000000).toFixed(2) + ' Cr';
+            if (num >= 100000) return '₹' + (num / 100000).toFixed(2) + ' L';
+            return '₹' + Math.round(num).toLocaleString('en-IN');
+        }
+
+        function animatePop(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('pop');
+            void el.offsetWidth;
+            el.classList.add('pop');
+        }
+
+        /* ── EMI ── */
+        function calculateEMI() {
+            const P = parseFloat(document.getElementById('emi-loan').value) || 0;
+            const r = (parseFloat(document.getElementById('emi-rate').value) / 12) / 100 || 0;
+            const n = (parseFloat(document.getElementById('emi-tenure').value) * 12) || 0;
+
+            if (P > 0 && r > 0 && n > 0) {
+                const emi = P * r * (Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1));
+                const totalPayment = emi * n;
+                const totalInterest = totalPayment - P;
+                const principalPct = (P / totalPayment * 100).toFixed(1);
+
+                document.getElementById('emi-monthly').innerText = formatCurrency(emi);
+                document.getElementById('emi-total-payment').innerText = formatCurrency(totalPayment);
+                document.getElementById('emi-interest').innerText = formatCurrency(totalInterest);
+                document.getElementById('emi-principal-bar').style.width = principalPct + '%';
+            } else {
+                document.getElementById('emi-monthly').innerText = '₹0';
+                document.getElementById('emi-total-payment').innerText = '₹0';
+                document.getElementById('emi-interest').innerText = '₹0';
+            }
+            animatePop('emi-monthly');
+        }
+
+        /* ── SIP ── */
+        function calculateSIP() {
+            const P = parseFloat(document.getElementById('sip-amount').value) || 0;
+            const r = (parseFloat(document.getElementById('sip-rate').value) / 12) / 100 || 0;
+            const n = (parseFloat(document.getElementById('sip-years').value) * 12) || 0;
+
+            if (P > 0 && r > 0 && n > 0) {
+                const totalAmount = P * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+                const investedValue = P * n;
+                const estReturns = totalAmount - investedValue;
+                const investedPct = (investedValue / totalAmount * 100).toFixed(1);
+
+                document.getElementById('sip-total').innerText = formatCurrency(totalAmount);
+                document.getElementById('sip-invested').innerText = formatCurrency(investedValue);
+                document.getElementById('sip-returns').innerText = formatCurrency(estReturns);
+                document.getElementById('sip-invested-bar').style.width = investedPct + '%';
+            } else {
+                ['sip-total', 'sip-invested', 'sip-returns'].forEach(id =>
+                    document.getElementById(id).innerText = '₹0');
+            }
+            animatePop('sip-total');
+        }
+
+        /* ── Tax ── */
+        function calculateTax() {
+            const income = parseFloat(document.getElementById('tax-income').value) || 0;
+            let deductions = 0;
+            let taxableIncome = income;
+
+            if (currentRegime === 'old') {
+                const c80 = Math.min(parseFloat(document.getElementById('tax-80c').value) || 0, 150000);
+                const d80 = Math.min(parseFloat(document.getElementById('tax-80d').value) || 0, 75000);
+                const hra = parseFloat(document.getElementById('tax-hra').value) || 0;
+                deductions = c80 + d80 + hra + 50000;
+                taxableIncome = Math.max(0, income - deductions);
+            } else {
+                deductions = 75000;
+                taxableIncome = Math.max(0, income - deductions);
+            }
+
+            let tax = 0;
+            if (currentRegime === 'new') {
+                if (taxableIncome > 300000) tax += Math.min(400000, taxableIncome - 300000) * 0.05;
+                if (taxableIncome > 700000) tax += Math.min(300000, taxableIncome - 700000) * 0.10;
+                if (taxableIncome > 1000000) tax += Math.min(200000, taxableIncome - 1000000) * 0.15;
+                if (taxableIncome > 1200000) tax += Math.min(300000, taxableIncome - 1200000) * 0.20;
+                if (taxableIncome > 1500000) tax += (taxableIncome - 1500000) * 0.30;
+                if (taxableIncome <= 700000) tax = 0; // Rebate
+            } else {
+                if (taxableIncome <= 500000) {
+                    tax = 0;
+                } else {
+                    if (taxableIncome > 1000000) tax += (taxableIncome - 1000000) * 0.30 + 112500;
+                    else if (taxableIncome > 500000) tax += (taxableIncome - 500000) * 0.20 + 12500;
+                    else if (taxableIncome > 250000) tax += (taxableIncome - 250000) * 0.05;
+                }
+            }
+
+            const cess = tax * 0.04;
+            const totalTax = tax + cess;
+            const effRate = income > 0 ? (totalTax / income * 100) : 0;
+            const takehomePct = income > 0 ? ((income - totalTax) / income * 100).toFixed(1) : 100;
+
+            document.getElementById('tax-total').innerText = formatCurrency(totalTax);
+            document.getElementById('tax-effective-rate').innerHTML =
+                `<i class="bi bi-percent"></i> Effective Rate: ${effRate.toFixed(1)}%`;
+            document.getElementById('tax-taxable').innerText = formatCurrency(taxableIncome);
+            document.getElementById('tax-deductions').innerText = formatCurrency(deductions);
+            document.getElementById('tax-cess').innerText = formatCurrency(cess);
+            document.getElementById('tax-takehome-bar').style.width = takehomePct + '%';
+            animatePop('tax-total');
+        }
+
+        /* ── Init ── */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Init slider fills
+            document.querySelectorAll('input[type="range"]').forEach(updateSliderFill);
+            calculateEMI();
+            calculateSIP();
+            calculateTax();
+        });
+    </script>
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='logout_animation.js') }}"></script>
+</body>
+
+</html>

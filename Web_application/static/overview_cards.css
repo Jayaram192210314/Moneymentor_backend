@@ -1,0 +1,382 @@
+.overview-section-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 24px 8px 12px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(8px);
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    margin-bottom: 24px;
+    gap: 12px;
+}
+
+.overview-section-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 18px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.title-dashboard::before {
+    background-color: #8b5cf6;
+    color: #8b5cf6;
+}
+
+.title-dashboard {
+    color: #6d28d9;
+}
+
+.title-live-rates {
+    justify-content: flex-start;
+    gap: 15px;
+    color: #b45309;
+}
+
+.title-live-rates::before {
+    background-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.title-live-rates-text {
+    display: flex;
+    align-items: center;
+}
+
+.live-badge {
+    background-color: rgba(244, 63, 94, 0.1);
+    color: #f43f5e;
+    border: 1px solid rgba(244, 63, 94, 0.2);
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 8px;
+}
+
+.live-badge::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: #f43f5e;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #f43f5e;
+    animation: pulse-live 1.5s infinite;
+}
+
+@keyframes pulse-live {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Base Overview Card */
+.overview-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255,255,255,0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1;
+}
+
+.overview-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: all 0.6s;
+    z-index: 2;
+}
+
+.overview-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.overview-card:hover::before {
+    left: 100%;
+}
+
+.card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 3;
+}
+
+.icon-box {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+}
+
+.badge-pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(4px);
+}
+
+.card-content-bottom {
+    position: relative;
+    z-index: 3;
+    margin-top: auto;
+}
+
+.card-content-bottom .card-label {
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.5);
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+}
+
+.card-content-bottom .card-value {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: #1e293b;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.card-watermark {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    font-size: 8rem;
+    opacity: 0.08;
+    z-index: 0;
+    transform: rotate(-15deg);
+    transition: all 0.5s ease;
+}
+
+.overview-card:hover .card-watermark {
+    transform: rotate(0deg) scale(1.1);
+    opacity: 0.12;
+}
+
+/* Specific Card Themes based on screenshot */
+/* Specific Card Themes */
+.card-learning {
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.card-learning .icon-box {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #ffffff;
+}
+
+.card-learning .badge-pill {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: #4f46e5;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.card-learning .card-value { color: #312e81; }
+
+.card-goals {
+    background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+    border-color: rgba(244, 63, 94, 0.2);
+}
+
+.card-goals .icon-box {
+    background: linear-gradient(135deg, #f43f5e, #e11d48);
+    color: #ffffff;
+}
+
+.card-goals .badge-pill {
+    background-color: rgba(244, 63, 94, 0.1);
+    color: #be123c;
+    border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.card-goals .card-value { color: #881337; }
+
+.card-gold {
+    background: linear-gradient(135deg, #fffcf0 0%, #fff9db 100%);
+    border-color: rgba(217, 119, 6, 0.2);
+}
+
+.card-gold .icon-box {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.card-gold .card-label-top {
+    font-weight: 800;
+    color: #92400e;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-gold .card-label {
+    color: #b45309;
+    font-weight: 600;
+}
+
+.card-gold .card-value {
+    color: #78350f;
+    font-weight: 900;
+}
+
+.card-gold .card-trend {
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(4px);
+}
+
+.card-silver {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-color: rgba(148, 163, 184, 0.3);
+}
+
+.card-silver .icon-box {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2);
+}
+
+.card-silver .card-label-top {
+    font-weight: 800;
+    color: #334155;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-silver .card-label {
+    color: #475569;
+    font-weight: 600;
+}
+
+.card-silver .card-value {
+    color: #1e293b;
+    font-weight: 900;
+}
+
+.card-silver .card-trend {
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(4px);
+}
+
+.card-tip {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.card-tip .icon-box {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+}
+
+.card-tip .badge-pill {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #065f46;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.card-tip .card-value { 
+    color: #064e3b;
+    font-size: 1.1rem !important;
+    font-weight: 600;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-tip .card-watermark {
+    color: #10b981;
+}
+
+.dark-mode .card-insights {
+    background: linear-gradient(135deg, #1e293b, #0f172a) !important;
+    border-color: rgba(56, 189, 248, 0.1) !important;
+}
+
+.dark-mode .card-insights .insight-section {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.dark-mode .insight-header {
+    color: #f1f5f9;
+}
+
+.dark-mode .insight-text {
+    color: #94a3b8;
+}
+
+.card-insights .insight-section {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.insight-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.insight-text {
+    font-size: 0.9rem;
+    color: #475569;
+    line-height: 1.5;
+}

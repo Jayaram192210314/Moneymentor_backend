@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gold Rates - Money Mentor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root {
+            --gold-primary: #f59e0b;
+            --gold-secondary: #fbbf24;
+            --gold-gradient: linear-gradient(135deg, #f59e0b, #fbbf24);
+            --bg-light: #fdfdfd;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        .gold-header {
+            background: var(--gold-gradient);
+            padding: 30px 20px;
+            color: white;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 25px;
+            left: 20px;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            font-size: 24px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .header-content {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .header-content h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header-content p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content-container {
+            max-width: 1200px;
+            margin: -30px auto 30px;
+            padding: 0 20px;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .price-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .price-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%);
+            padding: 30px 25px;
+            border-radius: 24px;
+            box-shadow: 0 12px 32px rgba(245, 158, 11, 0.4), 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            border: none;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .price-card::before {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 120px; height: 120px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 50%;
+        }
+        .price-card::after {
+            content: '';
+            position: absolute;
+            bottom: -20px; left: -20px;
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+
+        .karat-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.2);
+            padding: 5px 14px;
+            border-radius: 99px;
+            margin-bottom: 14px;
+            backdrop-filter: blur(4px);
+        }
+
+        .karat-badge i {
+            color: rgba(255,255,255,0.95);
+            font-size: 18px;
+        }
+
+        .purity {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 14px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .price-value {
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 4px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .unit {
+            font-size: 12px;
+            color: rgba(255,255,255,0.75);
+            margin-bottom: 18px;
+            font-weight: 500;
+        }
+
+        .change-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .change-pill.up {
+            background: #f0fdf4;
+            color: #22c55e;
+        }
+
+        .change-pill.down {
+            background: #fff1f2;
+            color: #ef4444;
+        }
+
+        .chart-section {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            height: 100%;
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid #f59e0b;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .chart-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .selection-card {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border: 1.5px dashed #fbbf24;
+            border-radius: 20px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            transition: all 0.35s cubic-bezier(.4,0,.2,1);
+            min-height: 88px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .selection-card::before {
+            content: '';
+            position: absolute;
+            top: -20px; right: -20px;
+            width: 80px; height: 80px;
+            background: rgba(251,191,36,0.12);
+            border-radius: 50%;
+        }
+
+        .selection-card.active {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border-style: solid;
+            border-color: #f59e0b;
+            box-shadow: 0 8px 28px rgba(245,158,11,0.25), inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .selection-item {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            padding: 0 12px;
+        }
+
+        .selection-item + .selection-item {
+            border-left: 1px solid rgba(245,158,11,0.25);
+        }
+
+        .selection-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #b45309;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .selection-value {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #92400e;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-24k { background-color: #fbbf24; }
+        .dot-22k { background-color: #d97706; }
+
+        .chart-container {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        #place-selector {
+            border: none;
+            background: #f1f5f9;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            outline: none;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        @media (max-width: 992px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+            .content-container {
+                margin-top: -20px;
+            }
+            .chart-section {
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="gold-header">
+        <div class="header-content">
+            <h1>Gold Rates</h1>
+            <p>Live prices & trends</p>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <div class="d-flex justify-content-center">
+             <select id="place-selector" onchange="updateData()">
+                <option value="chennai">Chennai</option>
+                <option value="mumbai">Mumbai</option>
+                <option value="delhi">Delhi</option>
+                <option value="bangalore">Bangalore</option>
+                <option value="hyderabad">Hyderabad</option>
+            </select>
+        </div>
+
+        <div class="layout-grid">
+            <div class="price-cards">
+                <!-- 24K Card -->
+                <div class="price-card">
+                    <div class="karat-badge">
+                        <i class='bx bxs-medal'></i> 24 KARAT
+                    </div>
+                    <div class="purity">99.9% Pure</div>
+                    <div class="price-value" id="price24k">₹00,000</div>
+                    <div class="unit">per gram</div>
+                    <div id="change24k" class="change-pill">0</div>
+                </div>
+
+                <!-- 22K Card -->
+                <div class="price-card">
+                    <div class="karat-badge">
+                        <i class='bx bxs-medal'></i> 22 KARAT
+                    </div>
+                    <div class="purity">91.6% Pure</div>
+                    <div class="price-value" id="price22k">₹00,000</div>
+                    <div class="unit">per gram</div>
+                    <div id="change22k" class="change-pill">0</div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h2>Price Trend (10 Days)</h2>
+                    <div class="chart-legend">
+                        <div class="legend-item"><span class="dot dot-24k"></span> 24K</div>
+                        <div class="legend-item"><span class="dot dot-22k"></span> 22K</div>
+                    </div>
+                </div>
+
+                <!-- Selection Card -->
+                <div class="selection-card" id="goldSelectionCard">
+                    <div class="selection-item">
+                        <div class="selection-label">Selected Date</div>
+                        <div class="selection-value" id="selDate">---</div>
+                    </div>
+                    <div class="selection-item">
+                        <div class="selection-label">24K Price</div>
+                        <div class="selection-value" id="sel24k">---</div>
+                    </div>
+                    <div class="selection-item">
+                        <div class="selection-label">22K Price</div>
+                        <div class="selection-value" id="sel22k">---</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="goldChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let goldChart = null;
+
+        async function updateData() {
+            const place = document.getElementById('place-selector').value;
+            try {
+                const res = await fetch(`/gold?place=${place}`);
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    // Update Prices
+                    document.getElementById('price24k').innerText = `₹${parseFloat(data.gold_price_24k_per_gram).toLocaleString()}`;
+                    document.getElementById('price22k').innerText = `₹${parseFloat(data.gold_price_22k_per_gram).toLocaleString()}`;
+
+                    // Update Changes
+                    const c24 = parseFloat(data.change_24k_today);
+                    const c22 = parseFloat(data.change_22k_today);
+
+                    const pill24 = document.getElementById('change24k');
+                    pill24.innerHTML = `<i class='bx bx-${c24 >= 0 ? 'trending-up' : 'trending-down'}'></i> ${c24 >= 0 ? '+' : ''}${c24}`;
+                    pill24.className = `change-pill ${c24 >= 0 ? 'up' : 'down'}`;
+
+                    const pill22 = document.getElementById('change22k');
+                    pill22.innerHTML = `<i class='bx bx-${c22 >= 0 ? 'trending-up' : 'trending-down'}'></i> ${c22 >= 0 ? '+' : ''}${c22}`;
+                    pill22.className = `change-pill ${c22 >= 0 ? 'up' : 'down'}`;
+
+                    // Update Chart
+                    updateChart(data.table);
+                }
+            } catch (e) {
+                console.error('Error fetching gold data:', e);
+            }
+        }
+
+        function updateChart(tableData) {
+            const labels = tableData.map(item => item.date).reverse();
+            const data24k = tableData.map(item => item['24k']).reverse();
+            const data22k = tableData.map(item => item['22k']).reverse();
+
+            const ctx = document.getElementById('goldChart').getContext('2d');
+
+            if (goldChart) {
+                goldChart.destroy();
+            }
+
+            goldChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '24K',
+                            data: data24k,
+                            borderColor: '#fbbf24',
+                            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: '22K',
+                            data: data22k,
+                            borderColor: '#d97706',
+                            backgroundColor: 'transparent',
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    onHover: (event, chartElement) => {
+                        if (chartElement.length > 0) {
+                            const index = chartElement[0].index;
+                            const date = labels[index];
+                            const val24k = data24k[index];
+                            const val22k = data22k[index];
+
+                            const elDate = document.getElementById('selDate');
+                            const el24k = document.getElementById('sel24k');
+                            const el22k = document.getElementById('sel22k');
+
+                            elDate.innerText = date;
+                            el24k.innerText = `₹${parseFloat(val24k).toLocaleString()}`;
+                            el22k.innerText = `₹${parseFloat(val22k).toLocaleString()}`;
+
+                            // Color logic based on previous day change
+                            if (index < labels.length - 1) {
+                                const prev24k = data24k[index + 1]; // data is reversed in labels/data variables
+                                const prev22k = data22k[index + 1];
+                                
+                                const change24 = val24k - prev24k;
+                                const change22 = val22k - prev22k;
+
+                                el24k.style.color = change24 >= 0 ? '#22c55e' : '#ef4444';
+                                el22k.style.color = change22 >= 0 ? '#22c55e' : '#ef4444';
+                            } else {
+                                el24k.style.color = 'inherit';
+                                el22k.style.color = 'inherit';
+                            }
+
+                            document.getElementById('goldSelectionCard').classList.add('active');
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', updateData);
+    </script>
+</body>
+</html>

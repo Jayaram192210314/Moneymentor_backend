@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Insights - Money Mentor</title>
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logout_animation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+
+    <style>
+        :root {
+            --bg-main: #fcf4f7;
+            --bg-surface: #ffffff;
+            --primary: #8b5cf6;
+            --primary-rgb: 139, 92, 246;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --primary-gradient: linear-gradient(135deg, #FF5252, #FFC107);
+            --tip-gradient: linear-gradient(135deg, #FF4081, #FF9100);
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding-top: 60px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding-top: 60px;
+            }
+        }
+
+        .logo-box-lg {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Header Styling */
+        .insights-header-bg {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 0 0 30px 30px;
+            margin: 0;
+            position: relative;
+        }
+
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            font-size: 1.5rem;
+            transition: transform 0.2s;
+            display: inline-block;
+            margin-right: 1rem;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Tip Card Styling */
+        .tip-card {
+            background: var(--tip-gradient);
+            border-radius: 2rem;
+            padding: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 15px 30px rgba(255, 64, 129, 0.2);
+            margin-bottom: 2rem;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .tip-card .badge-pill {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: fit-content;
+            margin-bottom: 1.5rem;
+        }
+
+        .tip-card h2 {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tip-card p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            opacity: 0.95;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tip-card .bg-icon {
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10rem;
+            opacity: 0.1;
+            color: white;
+            z-index: 1;
+        }
+
+        .bg-icon {
+            position: absolute;
+            font-size: 8rem;
+            opacity: 0.1;
+            right: 20px;
+            bottom: -20px;
+            transform: rotate(-15deg);
+        }
+
+
+        /* Term Card Styling */
+        .term-card {
+            background: white;
+            border-radius: 2rem;
+            padding: 2rem;
+            border: 2px solid #FFF8E1;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .term-card .label {
+            color: #FFB300;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .term-card h2 {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .term-card p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        /* Loading Animation */
+        .loading-shimmer {
+            background: rgba(255, 255, 255, 0.1);
+            background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0px, rgba(255, 255, 255, 0.2) 40px, rgba(255, 255, 255, 0.1) 80px);
+            background-size: 600px;
+            animation: shimmer 2s infinite linear;
+            height: 1.5rem;
+            border-radius: 4px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -468px 0;
+            }
+
+            100% {
+                background-position: 468px 0;
+            }
+        }
+
+        .dark-shimmer {
+            background: #f0f0f0;
+            background-image: linear-gradient(90deg, #f0f0f0 0px, #e0e0e0 40px, #f0f0f0 80px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header d-lg-none">
+        <a href="/dashboard" class="mobile-logo">
+            <div class="logo-box-lg" style="width: 32px; height: 32px; font-size: 1.1rem; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <span>Money Mentor</span>
+        </a>
+        <button class="mobile-toggle" id="sidebarToggle">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a class="navbar-brand d-flex align-items-center fw-bold mb-5" href="/index">
+                <div class="logo-box-lg mx-1 d-flex align-items-center justify-content-center me-2">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                Money Mentor
+            </a>
+            <nav>
+                <a href="/dashboard" class="sidebar-link" style="--clr: #3b82f6;"><span class="d-flex align-items-center"><i class="bi bi-grid-1x2 me-2"></i> Overview</span><b class="effect"></b></a>
+                <a href="/learning_center" class="sidebar-link" style="--clr: #8b5cf6;"><span class="d-flex align-items-center"><i class="bi bi-book me-2"></i> Learning Path</span><b class="effect"></b></a>
+                <a href="/tools" class="sidebar-link" style="--clr: #10b981;"><span class="d-flex align-items-center"><i class="bi bi-calculator me-2"></i> Calculators</span><b class="effect"></b></a>
+                <a href="/goals" class="sidebar-link" style="--clr: #f59e0b;"><span class="d-flex align-items-center"><i class="bi bi-graph-up me-2"></i> My Goals</span><b class="effect"></b></a>
+                <a href="/daily-insights" class="sidebar-link active" style="--clr: #ec4899;"><span class="d-flex align-items-center"><i class="bi bi-lightbulb me-2"></i> Daily Tips</span><b class="effect"></b></a>
+                <a href="/finbot" class="sidebar-link" style="--clr: #06b6d4;"><span class="d-flex align-items-center"><i class="bi bi-robot me-2"></i> FinBot</span><b class="effect"></b></a>
+                <a href="/profile" class="sidebar-link" style="--clr: #ef4444;"><span class="d-flex align-items-center"><i class="bi bi-person-circle me-2"></i> Profile</span><b class="effect"></b></a>
+
+                <button class="logoutButton" data-href="{{ url_for('logout') }}">
+                    <svg class="doorway" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <path class="bang"
+                            d="M40.5 43.7L26.6 31.4l-2.5 6.7zM41.9 50.4l-19.5-4-1.4 6.3zM40 57.4l-17.7 3.9 3.9 5.7z" />
+                    </svg>
+                    <svg class="figure" viewBox="0 0 100 100">
+                        <circle cx="52.1" cy="32.4" r="6.4" />
+                        <path
+                            d="M50.7 62.8c-1.2 2.5-3.6 5-7.2 4-3.2-.9-4.9-3.5-4-7.8.7-3.4 3.1-13.8 4.1-15.8 1.7-3.4 1.6-4.6 7-3.7 4.3.7 4.6 2.5 4.3 5.4-.4 3.7-2.8 15.1-4.2 17.9z" />
+                        <g class="arm1">
+                            <path
+                                d="M55.5 56.5l-6-9.5c-1-1.5-.6-3.5.9-4.4 1.5-1 3.7-1.1 4.6.4l6.1 10c1 1.5.3 3.5-1.1 4.4-1.5.9-3.5.5-4.5-.9z" />
+                            <path class="wrist1"
+                                d="M69.4 59.9L58.1 58c-1.7-.3-2.9-1.9-2.6-3.7.3-1.7 1.9-2.9 3.7-2.6l11.4 1.9c1.7.3 2.9 1.9 2.6 3.7-.4 1.7-2 2.9-3.8 2.6z" />
+                        </g>
+                        <g class="arm2">
+                            <path
+                                d="M34.2 43.6L45 40.3c1.7-.6 3.5.3 4 2 .6 1.7-.3 4-2 4.5l-10.8 2.8c-1.7.6-3.5-.3-4-2-.6-1.6.3-3.4 2-4z" />
+                            <path class="wrist2"
+                                d="M27.1 56.2L32 45.7c.7-1.6 2.6-2.3 4.2-1.6 1.6.7 2.3 2.6 1.6 4.2L33 58.8c-.7 1.6-2.6 2.3-4.2 1.6-1.7-.7-2.4-2.6-1.7-4.2z" />
+                        </g>
+                        <g class="leg1">
+                            <path
+                                d="M52.1 73.2s-7-5.7-7.9-6.5c-.9-.9-1.2-3.5-.1-4.9 1.1-1.4 3.8-1.9 5.2-.9l7.9 7c1.4 1.1 1.7 3.5.7 4.9-1.1 1.4-4.4 1.5-5.8.4z" />
+                            <path class="calf1"
+                                d="M52.6 84.4l-1-12.8c-.1-1.9 1.5-3.6 3.5-3.7 2-.1 3.7 1.4 3.8 3.4l1 12.8c.1 1.9-1.5 3.6-3.5 3.7-2 0-3.7-1.5-3.8-3.4z" />
+                        </g>
+                        <g class="leg2">
+                            <path
+                                d="M37.8 72.7s1.3-10.2 1.6-11.4 2.4-2.8 4.1-2.6c1.7.2 3.6 2.3 3.4 4l-1.8 11.1c-.2 1.7-1.7 3.3-3.4 3.1-1.8-.2-4.1-2.4-3.9-4.2z" />
+                            <path class="calf2"
+                                d="M29.5 82.3l9.6-10.9c1.3-1.4 3.6-1.5 5.1-.1 1.5 1.4.4 4.9-.9 6.3l-8.5 9.6c-1.3 1.4-3.6 1.5-5.1.1-1.4-1.3-1.5-3.5-.2-5z" />
+                        </g>
+                    </svg>
+                    <svg class="door" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <circle cx="66" cy="50" r="3.7" />
+                    </svg>
+                    <span class="button-text">Logout</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="insights-header-bg">
+                <div class="d-flex align-items-center gap-3">
+                    <div>
+                        <h2 class="fw-bold mb-0">Daily Insights</h2>
+                        <p class="mb-0 opacity-75">Learn something new</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-fluid px-4 mt-4">
+                <!-- Daily Tip Card -->
+                <div class="tip-card" id="tipCard">
+                    <i class="bi bi-lightbulb-fill bg-icon"></i>
+                    <div class="badge-pill">Tip of the Day</div>
+                    <h2 id="tipTitle">Smart Tip</h2>
+                    <div id="tipContent">
+                        <div class="loading-shimmer" style="width: 80%; margin-bottom: 10px;"></div>
+                        <div class="loading-shimmer" style="width: 60%;"></div>
+                    </div>
+                </div>
+
+                <!-- Daily Term Card -->
+                <div class="term-card" id="termCard">
+                    <div class="label">Term of the Day</div>
+                    <h2 id="termTitle">Daily Term</h2>
+                    <div id="termContent">
+                        <div class="loading-shimmer dark-shimmer" style="width: 70%; margin-bottom: 10px;"></div>
+                        <div class="loading-shimmer dark-shimmer" style="width: 90%; margin-bottom: 10px;"></div>
+                        <div class="loading-shimmer dark-shimmer" style="width: 50%;"></div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript for Dynamic Data -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchDailyTip();
+            fetchDailyTerm();
+        });
+
+        async function fetchDailyTip() {
+            try {
+                const response = await fetch('/daily-tip');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    document.getElementById('tipContent').innerHTML = `<p>${data.daily_tip}</p>`;
+                } else {
+                    document.getElementById('tipContent').innerHTML = '<p>Could not load tip at this moment.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching daily tip:', error);
+                document.getElementById('tipContent').innerHTML = '<p>Error loading tip.</p>';
+            }
+        }
+
+        async function fetchDailyTerm() {
+            try {
+                const response = await fetch('/daily-term');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const termText = data.daily_term;
+                    const parts = termText.split(' - ');
+
+                    if (parts.length > 1) {
+                        document.getElementById('termTitle').innerText = parts[0];
+                        document.getElementById('termContent').innerHTML = `<p>${parts.slice(1).join(' - ')}</p>`;
+                    } else {
+                        document.getElementById('termTitle').innerText = "Daily Term";
+                        document.getElementById('termContent').innerHTML = `<p>${termText}</p>`;
+                    }
+                } else {
+                    document.getElementById('termContent').innerHTML = '<p>Could not load term at this moment.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching daily term:', error);
+                document.getElementById('termContent').innerHTML = '<p>Error loading term.</p>';
+            }
+        }
+    </script>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='logout_animation.js') }}"></script>
+</body>
+
+</html>

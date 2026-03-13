@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Center - Money Mentor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logout_animation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='learning_cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mark_complete_animation.css') }}">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fdfafb;
+            /* Match redesign background */
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .logo-box-lg {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 0;
+            /* Remove padding for edge-to-edge header */
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding-top: 60px;
+            }
+        }
+
+        /* Reader Overlay & Modal Specific Styles */
+        #readerOverlay {
+            position: fixed;
+            top: 0;
+            left: 260px;
+            width: calc(100% - 260px);
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            z-index: 2000; /* Increased to be above everything */
+            display: none;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        @media (max-width: 768px) {
+            #readerOverlay {
+                left: 0;
+                width: 100%;
+                padding: 60px 15px;
+            }
+        }
+
+        .close-reader {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+
+        .close-reader:hover {
+            color: #0f172a;
+        }
+
+        .reader-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .article-body {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #334155;
+        }
+
+        .article-body h2 {
+            margin-top: 2rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .article-body p {
+            margin-bottom: 1.5rem;
+        }
+
+        #markCompleteBtn {
+            margin-top: 60px;
+        }
+
+
+        .module-list-modal {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .article-link {
+            padding: 14px 18px;
+            border-radius: 14px;
+            border: 1.5px solid #e2e8f0;
+            margin-bottom: 10px;
+            transition: all 0.22s cubic-bezier(.4,0,.2,1);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(99,102,241,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-link::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 4px 0 0 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .article-link:hover::before,
+        .article-link.completed::before {
+            opacity: 1;
+        }
+
+        .article-link.completed::before {
+            background: linear-gradient(135deg, #10b981, #34d399);
+        }
+
+        .article-link-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            background: #f1f0ff;
+            color: #6366f1;
+            transition: all 0.2s;
+        }
+
+        .article-link.completed .article-link-icon {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .article-link-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .article-link-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: color 0.2s;
+        }
+
+        .article-link-sub {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .article-link.completed .article-link-title {
+            color: #059669;
+        }
+
+        .article-link.completed .article-link-sub {
+            color: #6ee7b7;
+        }
+
+        .article-link-arrow {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .article-link:hover {
+            border-color: #6366f1;
+            box-shadow: 0 4px 16px rgba(99,102,241,0.12);
+            transform: translateX(3px);
+        }
+
+        .article-link:hover .article-link-arrow {
+            color: #6366f1;
+            transform: translateX(3px);
+        }
+
+        .article-link:hover .article-link-icon {
+            background: #6366f1;
+            color: #fff;
+        }
+
+        .article-link.completed {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .article-link.completed .article-link-arrow {
+            color: #10b981;
+        }
+
+        .article-link.completed:hover {
+            border-color: #10b981;
+            box-shadow: 0 4px 16px rgba(16,185,129,0.12);
+        }
+
+        .article-link.completed:hover .article-link-icon {
+            background: #10b981;
+            color: #fff;
+        }
+
+        /* Article navigation bar */
+        .article-nav-bar {
+            display: flex;
+            align-items: stretch;
+            justify-content: space-between;
+            margin-top: 56px;
+            padding-top: 28px;
+            border-top: 1px solid #e2e8f0;
+            gap: 16px;
+        }
+
+        .article-nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 22px;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(.4,0,.2,1);
+            text-decoration: none;
+            flex: 1;
+            max-width: 280px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(99,102,241,0.04);
+        }
+
+        .article-nav-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .article-nav-btn:hover:not(:disabled)::before { opacity: 1; }
+
+        .article-nav-btn:hover:not(:disabled) {
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .article-nav-btn > * { position: relative; z-index: 1; }
+
+        .article-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .nav-btn-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #f1f0ff;
+            color: #6366f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+            transition: all 0.25s;
+        }
+
+        .article-nav-btn:hover:not(:disabled) .nav-btn-icon {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        .nav-btn-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        #nextArticleBtn .nav-btn-text { align-items: flex-end; }
+        #nextArticleBtn { flex-direction: row-reverse; }
+
+        .nav-btn-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07rem;
+            color: #94a3b8;
+            transition: color 0.25s;
+        }
+
+        .article-nav-btn:hover:not(:disabled) .nav-btn-label {
+            color: rgba(255,255,255,0.75);
+        }
+
+        .nav-btn-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+            transition: color 0.25s;
+        }
+
+        .article-nav-btn:hover:not(:disabled) .nav-btn-title { color: #fff; }
+
+        .article-nav-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .nav-counter-pill {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .nav-counter-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .nav-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .nav-dot.active {
+            background: #6366f1;
+            width: 16px;
+            border-radius: 3px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header d-lg-none">
+        <a href="/dashboard" class="mobile-logo">
+            <div class="logo-box-lg" style="width: 32px; height: 32px; font-size: 1.1rem; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <span>Money Mentor</span>
+        </a>
+        <button class="mobile-toggle" id="sidebarToggle">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a class="navbar-brand d-flex align-items-center fw-bold mb-5" href="/index"
+                style="text-decoration: none; color: #1e293b;">
+                <div class="logo-box-lg mx-1 d-flex align-items-center justify-content-center me-2">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                Money Mentor
+            </a>
+            <nav>
+                <a href="/dashboard" class="sidebar-link" style="--clr: #3b82f6;"><span
+                        class="d-flex align-items-center"><i class="bi bi-grid-1x2 me-2"></i> Overview</span><b
+                        class="effect"></b></a>
+                <a href="/learning_center" class="sidebar-link active" style="--clr: #8b5cf6;"><span
+                        class="d-flex align-items-center"><i class="bi bi-book me-2"></i> Learning Path</span><b
+                        class="effect"></b></a>
+                <a href="/tools" class="sidebar-link" style="--clr: #10b981;"><span class="d-flex align-items-center"><i
+                            class="bi bi-calculator me-2"></i> Calculators</span><b class="effect"></b></a>
+                <a href="/goals" class="sidebar-link" style="--clr: #f59e0b;"><span class="d-flex align-items-center"><i
+                            class="bi bi-graph-up me-2"></i> My Goals</span><b class="effect"></b></a>
+                <a href="/daily-insights" class="sidebar-link" style="--clr: #ec4899;"><span
+                        class="d-flex align-items-center"><i class="bi bi-lightbulb me-2"></i> Daily Tips</span><b
+                        class="effect"></b></a>
+                <a href="/finbot" class="sidebar-link" style="--clr: #06b6d4;"><span
+                        class="d-flex align-items-center"><i class="bi bi-robot me-2"></i> FinBot</span><b
+                        class="effect"></b></a>
+                <a href="/profile" class="sidebar-link" style="--clr: #ef4444;"><span
+                        class="d-flex align-items-center"><i class="bi bi-person-circle me-2"></i> Profile</span><b
+                        class="effect"></b></a>
+
+                <button class="logoutButton" data-href="{{ url_for('logout') }}">
+                    <svg class="doorway" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <path class="bang"
+                            d="M40.5 43.7L26.6 31.4l-2.5 6.7zM41.9 50.4l-19.5-4-1.4 6.3zM40 57.4l-17.7 3.9 3.9 5.7z" />
+                    </svg>
+                    <svg class="figure" viewBox="0 0 100 100">
+                        <circle cx="52.1" cy="32.4" r="6.4" />
+                        <path
+                            d="M50.7 62.8c-1.2 2.5-3.6 5-7.2 4-3.2-.9-4.9-3.5-4-7.8.7-3.4 3.1-13.8 4.1-15.8 1.7-3.4 1.6-4.6 7-3.7 4.3.7 4.6 2.5 4.3 5.4-.4 3.7-2.8 15.1-4.2 17.9z" />
+                        <g class="arm1">
+                            <path
+                                d="M55.5 56.5l-6-9.5c-1-1.5-.6-3.5.9-4.4 1.5-1 3.7-1.1 4.6.4l6.1 10c1 1.5.3 3.5-1.1 4.4-1.5.9-3.5.5-4.5-.9z" />
+                            <path class="wrist1"
+                                d="M69.4 59.9L58.1 58c-1.7-.3-2.9-1.9-2.6-3.7.3-1.7 1.9-2.9 3.7-2.6l11.4 1.9c1.7.3 2.9 1.9 2.6 3.7-.4 1.7-2 2.9-3.8 2.6z" />
+                        </g>
+                        <g class="arm2">
+                            <path
+                                d="M34.2 43.6L45 40.3c1.7-.6 3.5.3 4 2 .6 1.7-.3 4-2 4.5l-10.8 2.8c-1.7.6-3.5-.3-4-2-.6-1.6.3-3.4 2-4z" />
+                            <path class="wrist2"
+                                d="M27.1 56.2L32 45.7c.7-1.6 2.6-2.3 4.2-1.6 1.6.7 2.3 2.6 1.6 4.2L33 58.8c-.7 1.6-2.6 2.3-4.2 1.6-1.7-.7-2.4-2.6-1.7-4.2z" />
+                        </g>
+                        <g class="leg1">
+                            <path
+                                d="M52.1 73.2s-7-5.7-7.9-6.5c-.9-.9-1.2-3.5-.1-4.9 1.1-1.4 3.8-1.9 5.2-.9l7.9 7c1.4 1.1 1.7 3.5.7 4.9-1.1 1.4-4.4 1.5-5.8.4z" />
+                            <path class="calf1"
+                                d="M52.6 84.4l-1-12.8c-.1-1.9 1.5-3.6 3.5-3.7 2-.1 3.7 1.4 3.8 3.4l1 12.8c.1 1.9-1.5 3.6-3.5 3.7-2 0-3.7-1.5-3.8-3.4z" />
+                        </g>
+                        <g class="leg2">
+                            <path
+                                d="M37.8 72.7s1.3-10.2 1.6-11.4 2.4-2.8 4.1-2.6c1.7.2 3.6 2.3 3.4 4l-1.8 11.1c-.2 1.7-1.7 3.3-3.4 3.1-1.8-.2-4.1-2.4-3.9-4.2z" />
+                            <path class="calf2"
+                                d="M29.5 82.3l9.6-10.9c1.3-1.4 3.6-1.5 5.1-.1 1.5 1.4.4 4.9-.9 6.3l-8.5 9.6c-1.3 1.4-3.6 1.5-5.1.1-1.4-1.3-1.5-3.5-.2-5z" />
+                        </g>
+                    </svg>
+                    <svg class="door" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <circle cx="66" cy="50" r="3.7" />
+                    </svg>
+                    <span class="button-text">Logout</span>
+                </button>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <!-- Purple Header Section -->
+            <header class="learning-header-bg">
+                <div class="header-title-box">
+                    <div class="header-icon-box">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-0">Learning Center</h2>
+                        <p class="mb-0" style="opacity: 0.9;">Your financial journey</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Overall Progress Section (Dark Card) -->
+            <div class="progress-card-dark">
+                <i class="bi bi-book watermark-icon"></i>
+
+                <div class="progress-header-row">
+                    <span>Overall Progress</span>
+                </div>
+
+                <div class="progress-main-row">
+                    <div class="progress-value-main">
+                        <span id="overallPercentageMain">0</span>%
+                    </div>
+                    <div class="progress-stats-right">
+                        <div class="fraction"><span id="completedCountView">0</span> of <span
+                                id="totalCountView">0</span></div>
+                        <div class="label">Articles Done</div>
+                    </div>
+                </div>
+
+                <div class="linear-progress-container">
+                    <div class="linear-progress-bar" id="linearProgressBar" style="width: 0%;"></div>
+                </div>
+
+                <div class="level-breakdown-row">
+                    <div class="level-breakdown-item">
+                        <div class="level-label text-md-start">Beginner</div>
+                        <div class="level-value text-md-start" id="begProgress">0%</div>
+                    </div>
+                    <div class="level-breakdown-item">
+                        <div class="level-label">Intermediate</div>
+                        <div class="level-value" id="intProgress">0%</div>
+                    </div>
+                    <div class="level-breakdown-item">
+                        <div class="level-label">Advanced</div>
+                        <div class="level-value" id="advProgress">0%</div>
+                    </div>
+                    <div class="level-breakdown-item">
+                        <div class="level-label text-md-end">Expert</div>
+                        <div class="level-value text-md-end" id="expProgress">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters Row -->
+            <div class="filters-row">
+                <div class="filter-btn-wrap active" style="--clr: #7c3aed; width: 90px;">
+                    <button class="filter-btn" onclick="filterModules('All')">
+                        <i class="bi bi-funnel filter-icon"></i> All
+                    </button>
+                </div>
+                <div class="filter-btn-wrap" style="--clr: #22c55e; width: 120px;">
+                    <button class="filter-btn" onclick="filterModules('Beginner')">
+                        <i class="bi bi-mortarboard-fill filter-icon"></i> Beginner
+                    </button>
+                </div>
+                <div class="filter-btn-wrap" style="--clr: #06b6d4; width: 148px;">
+                    <button class="filter-btn" onclick="filterModules('Intermediate')">
+                        <i class="bi bi-graph-up-arrow filter-icon"></i> Intermediate
+                    </button>
+                </div>
+                <div class="filter-btn-wrap" style="--clr: #f59e0b; width: 120px;">
+                    <button class="filter-btn" onclick="filterModules('Advanced')">
+                        <i class="bi bi-briefcase filter-icon"></i> Advanced
+                    </button>
+                </div>
+                <div class="filter-btn-wrap" style="--clr: #ef4444; width: 100px;">
+                    <button class="filter-btn" onclick="filterModules('Expert')">
+                        <i class="bi bi-gem filter-icon"></i> Expert
+                    </button>
+                </div>
+            </div>
+
+            <div id="learningGrid">
+                <!-- Content will be injected by JS -->
+            </div>
+        </main>
+
+        <!-- Reader Overlay -->
+        <div id="readerOverlay">
+            <span class="close-reader" onclick="closeReader()"><i class="bi bi-x-lg"></i></span>
+            <div class="reader-content">
+                <div id="articleHeader" class="mb-5">
+                    <span id="articleBadge" class="level-badge mb-3 d-inline-block"></span>
+                    <h1 id="articleTitle" class="display-5 fw-bold mb-3"></h1>
+                    <p id="articleMeta" class="text-muted"></p>
+                    <div class="d-flex gap-3">
+                        <div id="markCompleteBtn" class="mark-complete-animation-cont">
+                            <div class="demo__drone-cont demo__drone-cont--takeoff">
+                                <div class="demo__drone-cont demo__drone-cont--shift-x">
+                                    <div class="demo__drone-cont demo__drone-cont--landing">
+                                        <svg viewBox="0 0 136 112" class="demo__drone">
+                                            <g class="demo__drone-leaving">
+                                                <path class="demo__drone-arm" d="M52,46 c0,0 -15,5 -15,20 l15,10" />
+                                                <path class="demo__drone-arm demo__drone-arm--2"
+                                                    d="M52,46 c0,0 -15,5 -15,20 l15,10" />
+                                                <path class="demo__drone-yellow"
+                                                    d="M28,36 l20,0 a20,9 0,0,1 40,0 l20,0 l0,8 l-10,0 c-10,0 -15,0 -23,10 l-14,0 c-10,-10 -15,-10 -23,-10 l-10,0z" />
+                                                <path class="demo__drone-green" d="M16,12 a10,10 0,0,1 20,0 l-10,50z" />
+                                                <path class="demo__drone-green"
+                                                    d="M100,12 a10,10 0,0,1 20,0 l-10,50z" />
+                                                <path class="demo__drone-yellow"
+                                                    d="M9,8 l34,0 a8,8 0,0,1 0,16 l-34,0 a8,8 0,0,1 0,-16z" />
+                                                <path class="demo__drone-yellow"
+                                                    d="M93,8 l34,0 a8,8 0,0,1 0,16 l-34,0 a8,8 0,0,1 0,-16z" />
+                                            </g>
+                                            <path class="demo__drone-package demo__drone-green"
+                                                d="M50,70 l36,0 l-4,45 l-28,0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="demo__circle">
+                                <div class="demo__circle-inner">
+                                    <svg viewBox="0 0 16 20" class="demo__circle-package">
+                                        <path d="M0,0 16,0 13,20 3,20z" />
+                                    </svg>
+                                    <div class="demo__circle-grabbers"></div>
+                                </div>
+                                <svg viewBox="0 0 40 40" class="demo__circle-progress">
+                                    <path class="demo__circle-progress-line"
+                                        d="M20,0 a20,20 0 0,1 0,40 a20,20 0 0,1 0,-40" />
+                                    <path class="demo__circle-progress-checkmark" d="M14,19 19,24 29,14" />
+                                </svg>
+                            </div>
+                            <div class="demo__text-fields">
+                                <div class="demo__text demo__text--step-0">Mark as Completed</div>
+                                <div class="demo__text demo__text--step-1">
+                                    Processing
+                                    <span class="demo__text-dots"><span>.</span></span>
+                                </div>
+                                <div class="demo__text demo__text--step-2">
+                                    Reading....
+                                    <span class="demo__text-dots"><span>.</span></span>
+                                </div>
+                                <div class="demo__text demo__text--step-3">In Progress</div>
+                                <div class="demo__text demo__text--step-4">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+                <div id="articleBody" class="article-body">
+                    <!-- content -->
+                </div>
+
+                <!-- Prev / Next navigation -->
+                <div class="article-nav-bar" id="articleNavBar">
+                    <button class="article-nav-btn" id="prevArticleBtn" onclick="navigateArticle(-1)">
+                        <div class="nav-btn-icon"><i class="bi bi-arrow-left"></i></div>
+                        <div class="nav-btn-text">
+                            <span class="nav-btn-label">Previous</span>
+                            <span class="nav-btn-title" id="prevArticleTitle">Article</span>
+                        </div>
+                    </button>
+                    <div class="article-nav-center">
+                        <span class="nav-counter-pill" id="articleNavCounter"></span>
+                        <div class="nav-counter-dots" id="navDots"></div>
+                    </div>
+                    <button class="article-nav-btn" id="nextArticleBtn" onclick="navigateArticle(1)">
+                        <div class="nav-btn-icon"><i class="bi bi-arrow-right"></i></div>
+                        <div class="nav-btn-text">
+                            <span class="nav-btn-label">Next</span>
+                            <span class="nav-btn-title" id="nextArticleTitle">Article</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module Articles Modal -->
+        <div class="modal fade" id="moduleModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
+                <div class="modal-content glass-card p-2">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold" id="modalTitle">Module Title</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body module-list-modal" id="modalArticles">
+                        <!-- Links will be injected -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            const contentData = {
+                levels: [
+                    {
+                        name: "Level 1: Beginner",
+                        subtitle: "Financial Basics & Survival",
+                        class: "badge-beginner",
+                        modules: [
+                            {
+                                id: 1,
+                                title: "Budgeting Basics",
+                                icon: "bi-pie-chart",
+                                articles: [
+                                    { id: 1, title: "What is budgeting?", content: "<h2>What is Budgeting?</h2><p>Budgeting is the process of planning how you will use your income over a specific period, usually a month. It helps you control spending, save money, and avoid financial stress. A budget ensures that your money is used wisely by allocating it to different categories like needs, wants, and savings. Without a plan, money tends to disappear on small, unimportant things that do not add value to your life.</p><p>Budgeting is important because many people spend money without tracking where it goes. Over time, this leads to unnecessary expenses, debt, and lack of savings. With a proper budget, you can make informed decisions about spending and ensure that essential expenses are covered first. It gives you a clear picture of your financial health and helps you identify where you can cut back to save for bigger things like a house or a car.</p><p>A good budget also helps you plan for future financial goals. It is not about restricting your freedom, but rather about giving you more control over your life. By knowing exactly how much you can spend on fun activities, you can enjoy them without feeling guilty later. Budgeting is the foundation of all wealth creation and the first step toward total financial independence.</p>" },
+                                    { id: 2, title: "Needs vs Wants", content: "<h2>Needs vs Wants</h2><p>One of the most important steps in budgeting is understanding the difference between needs and wants. This simple distinction helps individuals prioritize their spending and make better financial decisions. A 'need' is something you absolutely must have to survive and function in daily life, while a 'want' is something that makes life more comfortable or enjoyable but is not strictly necessary.</p><p>Needs are expenses that are necessary for basic living and survival. Without these, daily life becomes difficult or even impossible. Examples include rent or housing payments, basic groceries, electricity and water bills, transportation for work, and basic healthcare. Needs should always be the first priority when creating a budget. They are non-negotiable expenses that must be covered every single month before you spend money on anything else.</p><p>Wants are things that improve your comfort or enjoyment but are not essential for your survival. Examples include dining at luxury restaurants, buying the latest smartphone when your current one works fine, online subscriptions, and designer clothing. While wants are not necessary, they can still be included in a balanced budget in moderation. The key is ensuring they do not interfere with your ability to save money or pay for your essential needs.</p>" },
+                                    { id: 3, title: "50/30/20 Rule", content: "<h2>The 50/30/20 Rule</h2><p>The 50/30/20 rule is a simple budgeting method that divides your monthly after-tax income into three main categories. It is designed to be an easy-to-follow guideline for people who don't want to track every single penny in a complex spreadsheet. By following this ratio, you ensure that you are covering your essentials, enjoying your life, and building a secure future at the same time.</p><p>The first 50 percent of your income should be allocated to your 'Needs.' This includes your rent or mortgage, utilities, groceries, and basic transportation. The next 30 percent is for your 'Wants,' which includes things like hobbies, dining out, and entertainment. By limiting your wants to 30 percent, you prevent lifestyle inflation from eating away at your ability to build wealth over the long term.</p><p>The final 20 percent must go toward 'Savings and Debt Repayment.' This is the most important part of the rule because it represents your future self. This money should be used to build an emergency fund, save for retirement, or pay off high-interest debt. If you consistently save 20 percent of your income, you will eventually reach a point where your investments can support your lifestyle without you needing to work.</p>" },
+                                    { id: 4, title: "Tracking Expenses", content: "<h2>How to Track Monthly Expenses</h2><p>Tracking expenses means keeping a detailed record of every single rupee you spend throughout the month. Many people are shocked to find out how much they actually spend on small items like daily coffee or snacks. These minor purchases can add up to thousands of rupees over a year. Tracking helps you understand your spending habits and identify areas where you can reduce unnecessary spending to save more money.</p><p>There are several effective ways to track your spending. You can use mobile apps that sync with your bank accounts and automatically categorize your transactions. Alternatively, you can use a simple spreadsheet or even a physical notebook to write down your daily purchases. The method you choose doesn't matter as much as your consistency. You must make it a habit to record your expenses immediately after they happen so that you don't forget anything.</p><p>By reviewing your expense categories at the end of every month, you can compare your actual spending to your budget. This allows you to spot patterns, such as spending too much on ordering food or subscriptions you no longer use. Once you see the numbers clearly, it becomes much easier to make logical decisions about where to cut back. Tracking your expenses is the only way to ensure that your budget actually works in the real world.</p>" },
+                                    { id: 5, title: "Why Emergency Fund is Important", content: "<h2>Why an Emergency Fund is Important</h2><p>An emergency fund is a stash of money set aside specifically to cover unexpected financial shocks. Life is unpredictable, and emergencies can happen at any time, often when you least expect them. Having an emergency fund acts as a financial safety net that protects you from the stress of sudden expenses. It provides you with peace of mind, knowing that you can handle a crisis without ruining your long-term plans.</p><p>Common examples of emergencies include sudden medical bills, unexpected job loss, major car repairs, or urgent home maintenance. Without an emergency fund, most people are forced to rely on high-interest credit cards or personal loans when these events occur. This can lead to a cycle of debt that is very difficult to break. An emergency fund ensures that a temporary crisis does not turn into a long-term financial disaster for you and your family.</p><p>Beyond just paying for bills, an emergency fund gives you freedom and options. If you are unhappy in a job but have six months of expenses saved up, you have the courage to leave and find a better opportunity. It prevents you from making desperate decisions out of fear. Building this fund should be the very first priority for anyone who wants to become financially stable and independent.</p>" },
+                                    { id: 6, title: "Building the Fund", content: "<h2>How to Build a 3–6 Month Emergency Fund</h2><p>Building an emergency fund is a gradual process that requires patience and discipline. Financial experts generally recommend saving enough money to cover three to six months of your essential living expenses. To start, you must calculate your 'floor' expenses—the minimum amount of money you need each month for food, shelter, and basic bills. Multiply this monthly number by six to find your ultimate target amount.</p><p>You do not need to save the entire amount all at once. The best strategy is to set a small, manageable monthly goal and automate the transfer to a separate savings account. For example, if you can save ₹5,000 every month, you will eventually reach your goal. It is important to treat this saving as a non-negotiable expense, just like paying your rent or electricity bill. Even a small start is better than no start at all.</p><p>The location of your emergency fund is also very important. You should keep this money in a place that is safe and very easy to access, such as a high-yield savings account or a liquid mutual fund. You should not invest this money in risky assets like individual stocks because the market might be down when you actually need to withdraw the cash. The goal of an emergency fund is safety and accessibility, not high investment growth.</p>" },
+                                ]
+                            },
+                            {
+                                id: 2,
+                                title: "Banking & Saving Basics",
+                                icon: "bi-bank",
+                                articles: [
+                                    { id: 7, title: "Types of bank accounts", content: "<h2>Types of Bank Accounts</h2><p>Banks offer several different types of accounts to help people manage their money for various purposes. Choosing the right account depends on whether you need the money for daily spending, long-term saving, or business operations. Each type of account has its own rules regarding interest rates, withdrawal limits, and minimum balance requirements. Understanding these choices helps you manage your cash flow more effectively.</p><p>A Savings Account is the most common type used by individuals to store their money safely while earning a small amount of interest. It is designed for personal use and allows you to deposit and withdraw money easily using an ATM or mobile banking. It is ideal for your emergency fund or for storing the cash you need for your monthly expenses. However, the interest rates are usually quite low, so it is not the best place for long-term wealth growth as it often barely keeps up with inflation.</p><p>For those who have a large amount of money they don't need immediately, a Fixed Deposit (FD) or a Recurring Deposit (RD) is a better choice because they offer higher interest rates in exchange for locking your money away for a set period. On the other hand, business owners use Current Accounts, which allow for unlimited daily transactions but usually do not pay any interest at all. By strategically using a combination of these accounts, you can ensure that your money is always working as hard as possible for you.</p>" },
+                                    { id: 8, title: "What is Fixed Deposit (FD)?", content: "<h2>What is a Fixed Deposit (FD)?</h2><p>A Fixed Deposit (FD) is a safe financial product offered by banks where you deposit a lump sum of money for a specific period of time at a fixed interest rate. Unlike a standard savings account, the money in an FD is intended to be kept in the bank until the 'maturity date.' In return for leaving your money with the bank for a long time, the bank pays you a significantly higher interest rate than a regular account. This makes it a great way to grow your savings without any risk.</p><p>When you open an FD, you choose the amount of money to deposit and the tenure, which can range from just a few days to several years. The interest rate is locked in at the start, meaning you are guaranteed to earn that exact amount regardless of what happens to the economy. This makes FDs one of the most stable and predictable ways to grow your money without taking any market risks. It is a favorite choice for conservative investors who want to protect their principal while still earning a decent return.</p><p>If you need to withdraw the money before the tenure ends, you can usually do so, but you will have to pay a small penalty fee, and the interest rate you receive will be lower than originally promised. This is called a 'premature withdrawal.' Because of this potential penalty, it is best to only put money in an FD that you are certain you won't need until the end of the term. FDs are excellent for short-term goals like saving for a wedding or for keeping your money safe after you have reached a specific financial target.</p>" },
+                                    { id: 9, title: "How FD interest is calculated", content: "<h2>How FD Interest is Calculated</h2><p>Understanding how your interest is calculated is important for predicting your future earnings and choosing the right investment period. Banks generally use two different methods: Simple Interest and Compound Interest. Most short-term FDs use simple interest, while long-term deposits usually benefit from compounding. Compounding is much more powerful because it allows you to earn interest on the interest you have already earned in previous months, creating a snowball effect.</p><p>Simple interest is very straightforward and is calculated only on the original amount you deposited. For example, if you deposit ₹10,000 at a 10 percent interest rate for one year, you will earn exactly ₹1,000. However, most banks in India use quarterly compounding for for longer terms. This means every three months, the interest you earned is added to your original deposit, and for the next three months, you earn interest on that new, larger amount. This makes your money grow much faster over multiple years than simple interest ever could.</p><p>The final amount you receive at maturity depends on several factors, including the principal, the interest rate, and the frequency of compounding. You should always check if your bank offers cumulative or non-cumulative FDs. A cumulative FD reinvests the interest to maximize compounding growth, while a non-cumulative FD pays out the interest to you every month or quarter as a regular income. If your goal is to grow your wealth, always choose the cumulative option to take full advantage of the mathematical power of compounding.</p>" },
+                                    { id: 10, title: "FD vs Savings Account", content: "<h2>FD vs Savings Account</h2><p>Deciding between a savings account and a Fixed Deposit depends entirely on your need for liquidity versus your desire for growth. A savings account offers high liquidity, meaning you can withdraw your money at any time from an ATM without any penalty. This makes it the perfect place to keep your everyday spending money and your emergency fund. However, the price you pay for this convenience is a very low interest rate that often fails to protect the value of your money from inflation.</p><p>A Fixed Deposit, on the other hand, is an investment tool designed to earn a higher return on money that you do not need for your immediate expenses. By agreeing to leave your money in the bank for a set period, the bank rewards you with much better interest rates. This makes FDs ideal for medium-term goals like saving for a house down payment or a child's school fees. The main drawback is that your money is 'locked in,' and breaking the FD early for an emergency will cost you money in fees and lost interest.</p><p>A smart financial strategy involves using both types of accounts together in a balanced way. Keep enough cash in your savings account to handle your monthly bills and a small buffer for immediate needs. Any extra money beyond that should be moved into an FD or other investments to earn a better return. By balancing these two types of accounts, you ensure that you always have access to cash when you need it while still growing your total wealth as efficiently and safely as possible.</p>" },
+                                    { id: 11, title: "When should you choose FD?", content: "<h2>When Should You Choose FD?</h2><p>A Fixed Deposit is not always the best investment, but it is the perfect choice for specific situations and personality types. You should choose an FD when your primary goal is the absolute safety of your hard-earned money. Unlike stocks or mutual funds, the value of your FD will never go down due to market crashes. You know exactly how much money you will have on the maturity date, which makes it excellent for planning specific events in the near future with total confidence.</p><p>FDs are also the best choice for short-term goals that are less than three years away. If you are saving for a specific goal like a vacation appearing in 18 months, the stock market is too risky because it could crash right when you need the money. An FD guarantees that your principal will be safe and you will earn a decent return. It is also a great tool for retirees who need a stable, guaranteed monthly income to pay for their daily living expenses without worrying about the daily news or market volatility.</p><p>Another reason to choose an FD is when you have reached your financial goals and want to 'lock in' your gains to avoid future risks. For example, if you have made a lot of profit in the stock market and want to make sure you don't lose it, moving that money into an FD is a smart way to protect your new wealth. While it will not make you rich as fast as stocks might, an FD ensures that you stay wealthy by preventing your hard-earned capital from being destroyed by a sudden economic downturn.</p>" },
+                                    { id: 12, title: "What is Recurring Deposit (RD)?", content: "<h2>What is a Recurring Deposit (RD)?</h2><p>A Recurring Deposit (RD) is a unique type of bank account that combines the high interest rates of a Fixed Deposit with the flexibility of monthly contributions. It is designed for people who do not have a large lump sum of money to invest right now but can afford to save a set amount every month. It is one of the best tools for building a disciplined saving habit because it makes saving a regular part of your monthly budget just like a bill.</p><p>When you open an RD, you choose a fixed amount to deposit every month and a tenure, such as ₹2,000 every month for two years. The bank gives you a fixed interest rate on every single deposit you make throughout the term. Just like an FD, your money is locked until the end of the term. This is perfect for achieving specific small goals, such as buying a new laptop, taking a vacation, or paying for an annual insurance premium without feeling the financial pinch all at once.</p><p>The main advantage of an RD is that it allows you to start small and build wealth over time. You can often start a Recurring Deposit with as little as ₹500 per month. This makes it highly accessible to everyone, from students to low-income earners who want to save. Because the interest rate is fixed at the beginning, you are protected from falling interest rates in the future. It is a simple, safe, and effective way to build wealth slowly but surely through the power of consistent monthly contributions.</p>" },
+                                ]
+                            },
+                            {
+                                id: 3,
+                                title: "Introduction to Tax",
+                                icon: "bi-calculator",
+                                articles: [
+                                    { id: 13, title: "What is income tax?", content: "<h2>What is Income Tax?</h2><p>Income tax is a type of direct tax that the government imposes on the money earned by individuals and businesses within a financial year. The government uses this collected money to fund essential public services like building roads, maintaining hospitals, providing education, and ensuring national security. In simple terms, it is the contribution you pay from your earnings to help the country function and grow.</p><p>Not everyone pays the same amount of tax. The tax you owe depends on how much you earn. People who earn a lower income might pay zero tax, while those who earn more pay a higher percentage of their income. This system is designed to be fair so that the financial burden is shared according to one's ability to pay. It is important to remember that income tax is calculated on your total annual income, which includes your salary, business profits, and interest from savings.</p><p>Filing your income tax returns is a legal responsibility for every citizen who earns above a certain limit. Even if you don't owe any tax because of your deductions, filing your return helps you maintain a clean financial record. This record is often required when you apply for a visa, take a home loan, or buy a large insurance policy. Understanding the basics of income tax is the first step toward being a responsible citizen and a smart money manager.</p>" },
+                                    { id: 14, title: "What is taxable income?", content: "<h2>What is Taxable Income?</h2><p>Taxable income is the specific portion of your total earnings that the government is allowed to tax. It is important to understand that your 'Gross Income' and your 'Taxable Income' are often very different numbers. Gross income is the total amount you earn from all sources, while taxable income is what remains after you subtract all the legal deductions and exemptions allowed by the law.</p><p>For example, if you earn ₹10 Lakhs a year, you don't necessarily pay tax on the full ₹10 Lakhs. The government allows you to set aside money for things like life insurance, provident funds, and school fees for children under various sections of the law. These amounts are 'exempted' from tax. By aggressively utilizing these rules, you can legally reduce your taxable income and keep more of your hard-earned money in your own pocket for your future goals.</p><p>Calculating your taxable income correctly is the most important part of tax planning. If you ignore these rules, you will end up paying much more tax than necessary. A smart investor always looks for ways to maximize their deductions early in the financial year. By the time the year ends, having a lower taxable income can save you thousands of rupees that would otherwise have gone to the government.</p>" },
+                                    { id: 15, title: "Understanding tax slabs", content: "<h2>Understanding Tax Slabs</h2><p>The government uses a 'tax slab' system to determine how much tax you must pay. This means that different portions of your income are taxed at different rates. For instance, the first few lakhs you earn might be completely tax-free. As your income increases and crosses specific thresholds, the 'extra' money you earn is taxed at a higher rate, such as 5 percent, 10 percent, or 20 percent.</p><p>In India, we currently have two main systems: the Old Tax Regime and the New Tax Regime. The Old Regime allows for many deductions (like 80C and HRA) but has higher tax rates for some slabs. The New Regime offers much lower tax rates but does not allow most deductions. You have the freedom to choose whichever system results in a lower tax bill for you. This choice depends entirely on your personal saving habits and your total income level.</p><p>A common mistake is thinking that if you enter a higher tax slab, your 'entire' income is taxed at that higher rate. In reality, only the money that falls within that specific slab is taxed at that rate. This is called a 'progressive' tax system. It ensures that earning more money always leaves you with more money in hand, even after paying the higher tax. Understanding these slabs helps you predict exactly how much of your next pay raise will actually end up in your bank account.</p>" },
+                                    { id: 16, title: "What is TDS?", content: "<h2>What is TDS?</h2><p>TDS stands for Tax Deducted at Source. It is a system where the person or company paying you money (like your employer or your bank) subtracts a small portion of tax before they give you the balance. This ensures that the government receives a steady stream of tax throughout the year, rather than waiting for everyone to pay a huge lump sum at the end of the financial year. It's essentially an 'advance tax' that is paid on your behalf.</p><p>When your employer pays your salary, they look at your total annual income and calculate the tax. They then divide this by 12 and deduct that amount every month. Similarly, if you earn a lot of interest on a Fixed Deposit, the bank will deduct TDS before depositing the interest into your account. Always remember that TDS is not a 'final' tax; it is just a payment plan. If your total tax at the end of the year is less than what was deducted, you can claim a refund from the government.</p><p>It is crucial to track your TDS meticulously using a document called Form 26AS, which you can download from the tax department's website. This form shows every single rupee of tax that has been deducted in your name by various companies. If you find an error, you must get it corrected immediately. Ensuring your TDS records are accurate makes filing your annual tax return a very fast and stress-free process.</p>" },
+                                    { id: 17, title: "Basic idea of deductions", content: "<h2>Basic Idea of Deductions</h2><p>Tax deductions are specialized legal rules that allow you to reduce the amount of income the government can tax. Think of deductions as a reward from the government for doing things that are good for your future or for society. For example, when you save money for retirement in a Provident Fund or buy health insurance for your family, the government 'deducts' that amount from your total income, so you pay less tax.</p><p>The most famous section for deductions in India is Section 80C. Under this rule, you can claim a deduction of up to ₹1.5 Lakhs by investing in various safe tools like ELSS mutual funds, Public Provident Fund (PPF), or life insurance premiums. There are also other sections for things like interest paid on home loans, donations to charity, and medical expenses for elderly parents. By understanding these sections, you can significantly lower your total tax bill legally.</p><p>To benefit from these deductions, you must keep proper proof of your investments, such as receipts and statements. Most employers will ask you to submit these proofs in January or February of every year. If you plan your investments carefully throughout the year, you can use these deductions to save a massive amount of money. Deductions are the single most powerful tool for middle-class families to build wealth while fulfilling their legal tax obligations.</p>" },
+                                ]
+                            },
+                            {
+                                id: 4,
+                                title: "Introduction to Investing",
+                                icon: "bi-rocket-takeoff",
+                                articles: [
+                                    { id: 18, title: "What is investing?", content: "<h2>What is Investing?</h2><p>Investing is the act of putting your money into assets like stocks, bonds, or real estate with the expectation that it will grow over time and generate a profit. Unlike working for a salary where you trade your time for money, investing is about making your money work for you. By becoming an investor, you are essentially buying a small piece of a business or lending money to the government in exchange for a share of their future success.</p><p>The goal of investing is to build wealth and achieve financial goals that would be impossible with just a regular salary. Over many years, a well-planned investment portfolio can grow to be much larger than the total amount of money you actually deposited. This is because your investments earn returns, and those returns earn more returns, creating a powerful cycle of growth. Investing is the only way to ensure that your wealth grows faster than the rate of inflation, preserving your lifestyle for the future.</p><p>However, it is important to remember that all investing involves some level of risk. While your money has the potential to grow, there is also a chance that the value of your assets could go down temporarily. This is why you should never invest money that you will need for your basic survival in the next few months. Successful investing requires a long-term mindset, patience, and the ability to stay calm even when market prices are fluctuating. It is a journey that starts with small amounts and leads to long-term financial freedom.</p>" },
+                                    { id: 19, title: "Saving vs Investing", content: "<h2>Saving vs Investing</h2><p>Many people use the terms 'saving' and 'investing' interchangeably, but they serve two very different psychological and financial purposes. Saving is the process of setting aside cash for short-term needs or emergencies. It is all about safety and immediate access. When you save money in a bank account, your main priority is ensuring that every rupee is still there whenever you need it. You aren't trying to get rich; you are trying to stay safe.</p><p>Investing, on the other hand, is a long-term strategy for building significant wealth. While savings are safe but grow slowly, investments have higher growth potential but come with the risk of price changes. You should only invest money that you do not need for at least three to five years. This gives your assets enough time to recover from any temporary market drops and benefit from the massive power of compounding. Think of saving as your 'shield' and investing as your 'sword' for financial success.</p><p>The biggest mistake you can make is doing only one of the two. If you only save, your money will slowly lose its value over time as prices rise (inflation). If you only invest, you might be forced to sell your assets at a loss during a market crash to pay for a sudden emergency. A perfect financial plan requires both: a solid foundation of safe savings for today's emergencies, and a growing portfolio of investments for your future dreams. Balancing these two is the secret to total financial security.</p>" },
+                                    { id: 20, title: "Risk vs return", content: "<h2>Risk vs Return</h2><p>The relationship between risk and return is the most fundamental rule in the world of money. It states that if you want the possibility of earning a high profit, you must be willing to accept a higher level of risk. Conversely, if you want your money to be perfectly safe, you must accept a much lower return. There is no such thing as a 'guaranteed high return with zero risk.' Any investment that promises both is usually a scam or a very dangerous trap.</p><p>For example, a Fixed Deposit in a government bank is very low risk because your money is almost 100 percent safe, but the return is also low, often just 6 or 7 percent. On the other hand, investing in a new technology startup has a very high risk because the company could fail completely, but if it succeeds, you could earn 100 times your money. Every investment falls somewhere on this spectrum. Understanding where you sit on this risk-return line is the first step toward building a portfolio that lets you sleep peacefully at night.</p><p>Your personal 'risk tolerance' depends on your age, your income, and your personality. A young person with 30 years before retirement can afford to take more risks because they have plenty of time to recover from any losses. An older person who needs their money next year should stick to very low-risk options. The key is to find a balance where the potential return is high enough to meet your goals, but the risk is not so high that you panic when prices drop. Diversification is the best tool to manage this balance effectively.</p>" },
+                                    { id: 21, title: "What is SIP?", content: "<h2>What is a Systematic Investment Plan (SIP)?</h2><p>A Systematic Investment Plan (SIP) is a disciplined way of investing a fixed amount of money in a mutual fund at regular intervals, such as once a month. Instead of trying to guess the best time to buy (which even experts struggle to do), you invest consistently regardless of whether the market is up or down. This removes the stress of daily price tracking and makes wealth building an automatic part of your monthly lifestyle, just like paying a bill.</p><p>One of the brilliant benefits of a SIP is 'Rupee Cost Averaging.' When the stock market is expensive, your fixed monthly amount buys fewer units of the fund. However, when the market crashes and prices are low, your same monthly amount automatically buys many more units. Over time, this lowers your average cost per unit and helps you generate much better profits without needing to predict the future. It is a mathematically superior way for common people to build wealth over several decades.</p><p>Starting a SIP also helps you benefit from the miracle of compounding. Even a small amount, like ₹1,000 per month, can grow into a massive sum over 20 years because you are constantly adding more fuel to your investment fire. The key to SIP success is not how much you invest, but how long you stay invested. By automating your investments, you remove human emotion and ensure that you stay on the path to financial freedom even during tough economic times.</p>" },
+                                    { id: 22, title: "What is a stock?", content: "<h2>What is a Stock?</h2><p>A stock, also known as a share, represents a tiny piece of ownership in a physical corporation. When you buy a stock, you become a 'shareholder,' which means you own a very small part of the company's assets and a portion of its future profits. If the company does well, sells more products, and earns more profit, the value of your tiny piece of the company will increase. You are essentially partnering with successful businesses to grow your own wealth alongside them.</p><p>Companies sell stocks to the public to raise money for big projects like building new factories, developing new technology, or expanding to more countries. In exchange for your money, the company might also pay you a 'dividend,' which is a regular cash payment made from their profits. There are thousands of companies you can choose from, ranging from giant banks and technology firms to small startups. By owning a collection of stocks, you can participate in the growth of the entire national and global economy.</p><p>However, owning stocks also means you share in the company's failures. If the company loses money or the economy enters a recession, the price of the stock can drop significantly. This is why you should never put all your money into a single company. Instead, intelligent investors buy a variety of stocks across different industries. Over the long term, the stock market has historically been one of the best ways to build life-changing wealth, provided you have the patience to hold through the ups and downs of the business cycle.</p>" },
+                                    { id: 23, title: "Basic idea of mutual funds", content: "<h2>Basic Idea of Mutual Funds</h2><p>A mutual fund is a professional financial tool that pools money from thousands of different investors to buy a massive collection of stocks, bonds, and other assets. Instead of you trying to pick individual stocks yourself, a professional 'Fund Manager' does the work for you. The fund manager uses their expertise to decide which companies to buy and when to sell them. This makes mutual funds the perfect choice for busy people who want to grow their wealth but don't have the time to study the stock market every day.</p><p>One of the biggest advantages of a mutual fund is instant diversification. Even if you only have ₹500 to invest, a mutual fund allows you to spread that tiny amount across 50 or 60 different giant companies like Google, Reliance, or HDFC Bank. If one of those companies fails, it only has a small impact on your total investment. This makes mutual funds much safer than trying to pick one or two individual stocks on your own. It provides a level of professional management and safety that was previously only available to the very wealthy.</p><p>Mutual funds come in many different types to suit every kind of goal. Some funds only buy stocks for high growth, while others only buy safe government bonds for steady income. There are even 'index funds' that simply copy the entire top 50 companies of the stock market at a very low cost. To start, you just need to pick a fund that matches your risk level and goals. With a mutual fund, you get a professionally managed, highly diversified, and strictly regulated portfolio that grows with the world's most successful businesses.</p>" },
+                                ]
+                            },
+                        ]
+                    },
+                    {
+                        name: "Level 2: Intermediate",
+                        subtitle: "Smart Money Management",
+                        class: "badge-intermediate",
+                        modules: [
+                            {
+                                id: 5,
+                                title: "Advanced Budgeting & Cash Flow",
+                                icon: "bi-graph-up-arrow",
+                                articles: [
+                                    { id: 24, title: "Zero-based budgeting", content: "<h2>Zero-Based Budgeting</h2><p>Zero-based budgeting is a highly disciplined money management strategy where every single rupee of your monthly income is assigned a specific task. By the end of the calculation, your 'Income minus Expenses' must equal exactly zero. This does not mean you have zero money left in your bank account; it means that every rupee has been purposefully moved into a category, such as groceries, rent, or long-term savings.</p><p>This method prevents 'lazy money' from sitting in your account and being spent on random things you don't actually need. When you give every rupee a job to do, you become much more aware of where your wealth is going. If you have ₹5,000 left at the end of your planning, you don't just leave it there—you explicitly move it into your 'Emergency Fund' or 'Stock Portfolio' category. This ensures that 100 percent of your effort is focused on your goals.</p><p>Successful zero-based budgeting requires you to plan your spending 'before' the month begins. At the start of every month, look at your expected salary and distribute it across your categories until you reach zero. Throughout the month, you must track your actual spending against this plan. If you overspend in one category, you must physically move money from another category to balance it. This absolute accountability is why zero-based budgeting is a favorite among the world's most successful wealth builders.</p>" },
+                                    { id: 25, title: "Increasing savings rate", content: "<h2>How to Increase Your Savings Rate</h2><p>Your savings rate—the percentage of your income you save rather than spend—is one of the most critical factors in achieving financial freedom. Increasing it even by a small margin can drastically accelerate your goals. A simple way to start is by automating your savings on the day you receive your salary. This way, you don't even see the money, making it harder to spend. By treating your savings as a non-negotiable expense, you ensure that your future self is paid before anyone else.</p><p>Another effective strategy is to meticulously analyze your monthly recurring subscriptions and memberships. Many people are surprised by how many small fees they pay for services they rarely use. Canceling even a few of these can free up a significant amount of cash over a year. Additionally, implementing the 24-hour rule for non-essential purchases helps prevent impulse spending. By waiting a full day before buying something, you give yourself the chance to evaluate if you truly need it or if it's just a temporary want.</p><p>Finally, you should aim to increase your savings rate every time you receive a pay raise or a bonus. A common trap is lifestyle inflation, where your spending grows alongside your income. If you can commit to saving at least half of every raise you get, your savings rate will naturally climb over time without you feeling any pinch. A higher savings rate means you reach your financial milestones faster, providing a larger safety net and more options in your life. It is the single most powerful lever you have for building long-term wealth.</p>" },
+                                    { id: 26, title: "Lifestyle inflation", content: "<h2>The Trap of Lifestyle Inflation</h2><p>Lifestyle inflation occurs when your spending increases as your income grows, often leaving you in the same financial position despite earning more. While it is natural to want to enjoy your hard-earned money, increasing your lifestyle too rapidly can trap you even at a high income level. This happens because our expectations rise alongside our income, making it easy to forget the importance of saving for the future. The key is to consciously manage your desires so that your bank balance grows faster than your standard of living.</p><p>To counter this trap, you should try to maintain your existing standard of living even after receiving a significant raise or bonus. If you can continue living as if your income hasn't changed, you can invest the majority of the extra money into high-growth assets. Focusing on meaningful experiences rather than just buying more expensive physical possessions can also help. Possessions often require maintenance and space, which adds to your ongoing expenses, while experiences provide lasting memories without the long-term financial drag.</p><p>Setting clear and exciting financial goals is the final defense against lifestyle inflation. When you have a deep desire to achieve 'early retirement' or 'buying a dream house,' it becomes much easier to say no to unnecessary upgrades today. Your goals provide the motivation to stay disciplined when you see others spending their raises on luxury cars or expensive clothes. By keeping your expenses steady while your income grows, you widen the gap between earning and spending—which is where massive generational wealth is built.</p>" },
+                                    { id: 27, title: "Budgeting for irregular income", content: "<h2>Budgeting for Irregular Income</h2><p>Managing money is much more challenging when your income changes every single month, such as for freelancers, business owners, or sales professionals. The key to survive and thrive with an irregular income is to budget based on your 'floor' income—the absolute minimum amount you are guaranteed to earn even in a bad month. This ensures that your essential needs like rent and food are always covered regardless of your business performance.</p><p>In high-income months, you must resist the urge to increase your lifestyle spending. Instead, you should move the 'extra' money into a specialized 'Stability Fund' or a 'Hill and Valley' buffer account. During 'valley' months when your income is low, you withdraw from this buffer to pay yourself a steady, predictable salary. This strategy smooths out the fluctuations and prevents the high-stress cycle of 'feast and famine' that many freelancers suffer from.</p><p>Furthermore, you should prioritize building a much larger emergency fund than a salaried person. While a salaried person might be safe with three months of expenses, as a business owner, you should aim for six to twelve months of survival cash. This massive buffer gives you the peace of mind to focus on growing your business or finding your next client without worrying about your immediate survival. Irregular income requires high discipline, but with a buffer fund, it can lead to much greater wealth than a fixed salary.</p>" },
+                                    { id: 28, title: "Debt Management Basics", content: "<h2>Debt Management Basics</h2><p>Debt is one of the biggest obstacles to building long-term wealth because interest payments act like a 'leak' in your financial bucket. To manage debt effectively, you must first distinguish between 'Good Debt' and 'Bad Debt.' Good debt is money borrowed at a low interest rate to buy an asset that grows in value, like a home loan. Bad debt is money borrowed at a high interest rate for things that lose value, like credit card spending or high-interest personal loans.</p><p>The first rule of debt management is to prioritize paying off high-interest debt as fast as possible. You can use the 'Avalanche Method,' where you focus every spare rupee on the debt with the highest interest rate while paying the minimum on everything else. Mathematically, this saves you the most money in interest and gets you out of debt the fastest. Alternatively, the 'Snowball Method' involves paying off the smallest balance first to get a quick psychological win and build momentum.</p><p>Once you are out of high-interest debt, your goal should be to stay out permanently. Never use a credit card unless you can pay the full balance every single month. Avoid 'No Cost EMI' traps that encourage you to buy things you cannot actually afford. Remember, every rupee you spend on bank interest is a rupee that isn't growing in your investment account. Being debt-free is the ultimate foundation of financial freedom and allows you to take bigger, smarter risks in your investing journey.</p>" }
+                                ]
+                            },
+                            {
+                                id: 6,
+                                title: "Tax Planning for Beginners",
+                                icon: "bi-shield-check",
+                                articles: [
+                                    { id: 29, title: "Old vs New tax regime", content: "<h2>Old vs New Tax Regime</h2><p>When you file your taxes in India, you are given a choice between two completely different tax systems. The Old Tax Regime mimics a traditional approach where the tax rates are higher, but you are allowed to claim many deductions for house rent, insurance, and long-term savings. The New Tax Regime offers much lower tax rates but removes almost all deductions. Choosing the right one is one of the most important financial decisions you will make every year.</p><p>The choice depends heavily on your lifestyle and your ability to save. If you pay a large home loan EMI and invest aggressively in 80C tools, the Old Regime is often better because the heavy deductions will lower your taxable income significantly. However, if you are a young professional who prefers higher cash in hand and doesn't want to lock money in long-term insurance policies, the New Regime is usually more profitable. You should use a tax calculator every year to compare both systems before making your final selection.</p><p>It is important to remember that for salaried employees, you can switch between these regimes every single year. This gives you the flexibility to choose the Old Regime in years when you have many big expenses and the New Regime when you want to maximize your immediate liquid cash. By understanding the math behind both systems, you ensure that you never pay a single rupee more in tax than you legally owe. Systematic tax planning is the key to maximizing your take-home pay.</p>" },
+                                    { id: 30, title: "Section 80C overview", content: "<h2>Section 80C Overview</h2><p>Section 80C is the most popular and powerful tool in the Indian Income Tax Act for the common individual. It allows you to reduce your taxable income by up to ₹1.5 Lakhs every year by making specific investments. This means that if you belong to the 30 percent tax bracket, investing ₹1.5 Lakhs under Section 80C can directly save you ₹45,000 in taxes every single year. It is the government's way of encouraging people to save for their own long-term future needs.</p><p>There are many different types of investments that qualify for this deduction. Common options include life insurance premiums, the Public Provident Fund (PPF), Employee Provident Fund (EPF), and specialized 5-year bank fixed deposits. It even covers non-investment expenses like your children's school tuition fees and the principal repayment of your home loan. Because the list is so long, almost everyone can find a way to maximize this limit and lower their tax bill easily.</p><p>A smart strategy for 80C is to not wait until March to make your investments. If you invest early in the year, your money has more time to grow and earn interest. Furthermore, you should pick investments that match your risk level. If you can handle some market risk, ELSS mutual funds are a great choice for higher long-term growth. If you want total safety, the PPF is a government-guaranteed tool. Maximizing your 80C limit is the absolute first step for anyone starting their tax planning journey.</p>" },
+                                    { id: 31, title: "80D (health Insurance deduction)", content: "<h2>80D (Health Insurance Deduction)</h2><p>Section 80D allows you to claim a deduction for health insurance premiums paid for yourself, your spouse, your children, and your parents. For yourself and your family, the maximum deduction is ₹25,000. If your parents are senior citizens (above 60), you can claim an additional deduction of up to ₹50,000. This brings the total potential benefit to ₹75,000, which is a massive help for middle-class families facing rising medical costs.</p><p>The deduction also covers expenses for preventive health check-ups up to ₹5,000 within the overall limit. This encourages citizens to take proactive care of their health. It is important to note that the premium must be paid by any mode other than cash to be eligible for the deduction. Keeping your family protected with a comprehensive health insurance policy is not just a smart healthcare move, but also a mathematically superior tax-saving strategy.</p>" },
+                                    { id: 32, title: "HRA Basics", content: "<h2>HRA Basics</h2><p>House Rent Allowance (HRA) is a component of your salary provided by your employer to help pay for rented accommodation. If you live in a rented house, you can claim a tax exemption on the HRA you receive. The exemption is the 'minimum' of three amounts: the actual HRA received, 50% of your salary (if living in a metro city like Mumbai/Delhi) or 40% (non-metro), or the actual rent paid minus 10% of your salary.</p><p>To claim this benefit, you must provide valid rent receipts to your employer. If your annual rent exceeds ₹1 Lakh, you are also required to provide the PAN of your landlord. HRA is one of the most powerful tax-saving tools for salaried professionals who do not own a house in the city of their employment. Understanding the math behind HRA helps you negotiate a better salary structure and keep more of your hard-earned money.</p>" },
+                                    { id: 33, title: "How to legally reduce tax", content: "<h2>How to Legally Reduce Tax</h2><p>Reducing your tax liability legally is about using the various sections and deductions provided by the government. The most common route is Section 80C for long-term investments like PPF, EPF, and ELSS. However, smart tax planning goes beyond 80C. You should also utilize Section 80D for health insurance, Section 24 for interest on your home loan, and your HRA for house rent expenses. Many people also forget about Section 80TTA, which allows an exemption on interest from your savings account up to ₹10,000.</p><p>The key to legal tax reduction is 'early planning.' If you wait until the end of the financial year, you might make rushed decisions and lock your money in low-return insurance policies. Instead, start your investments in April and track your deductions every month. By building a balanced portfolio of tax-saving tools, you fulfill your legal obligations as a citizen while ensuring your personal wealth grows as fast as possible for your future goals.</p>" },
+                                    { id: 34, title: "Common tax mistakes", content: "<h2>Common Tax Mistakes</h2><p>Many taxpayers end up paying more tax than necessary because of simple, avoidable mistakes. One of the most common errors is choosing the wrong tax regime—the Old and New regimes work differently for everyone. Another big mistake is not declaring 'Income from Other Sources,' such as interest from your savings accounts or fixed deposits. If you ignore these, you might face penalties or legal notices from the tax department later on.</p><p>Missing the filing deadline is also a major error that can lead to heavy late fees and the loss of the ability to carry forward business losses. Finally, many people fail to keep proper digital or physical proofs of their investments throughout the year. When it's time for audit, they struggle to prove their deductions. By staying organized, using tax calculators, and keeping your documents ready, you can make the tax season stress-free and ensure that your financial health stays in perfect condition.</p>" }
+
+                                ]
+                            },
+                            {
+                                id: 7,
+                                title: "FDs & Debt Instruments",
+                                icon: "bi-safe",
+                                articles: [
+                                    { id: 35, title: "FD vs Bonds", content: "<h2>FD vs Bonds</h2><p>Fixed Deposits and bonds are both considered debt instruments, meaning they involve lending your money in exchange for a fixed interest return. However, they differ significantly in their structure, safety, and how you can access your money. A Fixed Deposit is a financial product offered by banks where you deposit a lump sum for a fixed period at a set interest rate. They are considered very safe because they are protected by deposit insurance up to a certain limit and are backed by the stability of the bank.</p><p>Bonds, on the other hand, are debt instruments issued by the government or large corporations to raise capital for projects or expansion. When you buy a bond, you are essentially lending money to the issuer for a specific term. In return, the issuer pays you regular interest, called 'coupons,' and returns your full principal at the maturity date. Bonds can often offer higher interest rates than bank FDs, especially if they are issued by private companies. However, they can also be slightly riskier if the company faces financial trouble and cannot repays its debt.</p><p>The biggest practical difference between the two is their liquidity and flexibility. Most Fixed Deposits have a fixed tenure, and breaking them early usually results in a small penalty fee. Bonds are often traded on the stock exchange, which means you can potentially sell your bond to another investor before the term ends if you need cash. However, the market price of a bond can fluctuate based on interest rate changes in the economy. Choosing between the two depends on whether you prefer the simple, guaranteed safety of a bank FD or the potentially higher but more variable returns of an investment bond.</p>" },
+                                    { id: 36, title: "How FD Interest is Taxed", content: "<h2>How FD Interest is Taxed</h2><p>It is a common misunderstanding that the interest earned on a Fixed Deposit is free from tax. In reality, the interest you earn is fully taxable according to your personal income tax slab. This means that if you belong to the 30 percent tax bracket, the government will take almost one-third of your FD interest as tax. The interest is added to your 'Income from Other Sources' at the end of every financial year, and you must report it accurately in your tax return.</p><p>To ensure they receive the tax, banks use a system called TDS, or Tax Deducted at Source. If the total interest you earn across all your FDs in a single bank exceeds a specific limit—currently ₹40,000 for regular individuals and ₹50,000 for senior citizens—the bank will automatically subtract 10 percent of your interest and pay it to the government. It is important to remember that this 10 percent is just an advance; if you are in a higher tax bracket, you will still need to pay the remaining balance when you file your returns.</p><p>If your total annual income is below the taxable limit, you can prevent the bank from deducting this TDS by submitting special forms known as Form 15G or Form 15H. These forms effectively inform the bank that your total tax for the year will be zero, so they should pay you the full interest amount without any cuts. You must also ensure that your PAN card is correctly linked to your bank account; otherwise, the bank is legally required to deduct tax at a much higher rate of 20 percent. Proper tax planning helps you keep more of your interest earnings for your future goals.</p>" },
+                                    { id: 37, title: "Laddering Strategy in FD", content: "<h2>Laddering Strategy in FD</h2><p>One of the biggest drawbacks of a Fixed Deposit is that your money is locked away for a set period. If interest rates in the economy rise after you have already started an FD, you miss out on the chance to earn that higher return. FD laddering is a brilliant strategy used to manage this risk while also ensuring regular access to your cash. Instead of depositing a single large lump sum into one 5-year FD, you divide that money into five smaller equal parts and invest them in different FDs with different terms.</p><p>In this system, you might start one FD for 1 year, another for 2 years, and so on up to 5 years. This creates a 'ladder' of maturities. After the first year, your 1-year FD will mature. You then take that money and reinvest it into a new 5-year FD at the current market rate. Each year, one of your smaller FDs will mature, providing you with regular liquidity while the rest of your money continues to earn long-term interest rates. This ensures that you always have access to some cash every twelve months without ever needing to pay a penalty for breaking an FD early.</p><p>The main benefit of laddering is that it averages out your interest returns over time. If interest rates go up, you will have cash maturing soon that you can reinvest at the better high rate. If interest rates go down, most of your money is already locked into the older, higher-rate FDs for several more years. This strategy provides a perfect balance between safety, growth, and liquidity. It is a highly effective way for conservative investors to manage their debt portfolio without worrying about the daily news or sudden changes in the economy.</p>" },
+                                    { id: 38, title: "Safe Investment Strategies", content: "<h2>Safe Investment Strategies</h2><p>For conservative investors or those who are nearing important financial goals like retirement, preserving their capital is much more important than seeking high growth. Safe investment strategies focus on stable, low-risk tools that guarantee your principal will never be lost. The most common starting point is to prioritize government-backed schemes. Tools like the Public Provident Fund or the National Savings Certificate offer guaranteed returns because they are backed by the full promise of the national government, providing the ultimate level of safety.</p><p>Another key strategy for safety is maintaining a 'ladder' of Fixed Deposits across different banks. This ensures that you have both safety and liquidity at all times. You should also look at the credit ratings of any private investment you consider. Before putting money into a corporate fixed deposit or a private bond, always check for an 'AAA' rating, which signifies the highest level of safety. Diversifying your safe money across different asset classes, like a mix of FDs, gold, and short-term government bonds, acts as a further shield against inflation and economic changes.</p><p>The absolute rule of any safe investment strategy is to never invest your 'survival' money in risky or non-liquid assets. You must first ensure you have an emergency fund sitting in a simple savings account or a liquid fund. Only once your immediate survival is secured should you look into long-term safety tools like the PPF. By following a structured approach to safety, you can sleep peacefully at night knowing that your hard-earned wealth is protected from market crashes and that your future goals are financially secure regardless of the economic climate.</p>" },
+                                    { id: 39, title: "When FD is Better than Equity", content: "<h2>When FD is Better than Equity</h2><p>While the stock market generally provides much higher returns over many decades, there are specific situations where a Fixed Deposit is a far superior choice for an investor. The most common scenario is when your financial goal is very close, typically within one to three years. If you need money for a wedding, a child's school admission, or a house down payment in the near future, you should never risk that money in the stock market. A sudden market crash right before your goal could erase years of savings and ruin your plans completely.</p><p>FDs are also much better for people who require a stable and predictable regular income. For example, many retirees rely on the monthly interest payments from their FDs to pay for their daily groceries and bills. They cannot afford to wait for a stock market recovery if prices drop. For these individuals, the peace of mind that comes from knowing exactly how much money will arrive in their bank account every month is much more valuable than any potential extra profit from stocks. If market volatility causes you significant stress or prevents you from sleeping, sticking to safe FDs is a perfectly smart personal choice.</p><p>Finally, FDs are a great tool for 'locking in' your gains after you have already reached your financial target. If you have been lucky in the stock market and currently have enough money to meet your life goals, it is often wise to move a portion of that wealth into a Fixed Deposit. This protects your hard-earned winnings from future market crashes and ensures that you stay wealthy for the rest of your life. While FDs will not make you as rich as stocks might, they are unparalleled at 'keeping' you rich by preventing your capital from being destroyed by sudden economic downturns.</p>" }
+
+                                ]
+                            },
+                            {
+                                id: 8,
+                                title: "SIP & Mutual Funds",
+                                icon: "bi-infinity",
+                                articles: [
+                                    { id: 40, title: "How SIP Works (with Example)", content: "<h2>How SIP Works (with Example)</h2><p>A Systematic Investment Plan (SIP) is a brilliant way to build wealth without needing a large amount of money to start with. By setting up a SIP, you commit to investing a fixed amount of money—for example, ₹2,000—into a mutual fund every single month. This money is automatically deducted from your bank account, which helps you stay disciplined. Instead of trying to guess when the stock market is at its lowest, you simply keep buying every month, which removes the stress of market timing.</p><p>The real secret of SIP is something called 'Rupee Cost Averaging.' When the stock market is doing well and prices are high, your ₹2,000 will buy fewer units of the fund. However, when the market crashes and prices are low, that same ₹2,000 will automatically buy a much larger number of units. Over several years, this process averages out the cost of your investments. You end up owning more units at a lower average price, which leads to much better profits when the market eventually goes back up.</p><p>Starting a SIP as early as possible is the best way to take advantage of long-term growth. Because you are investing regularly, you don't need to worry about the daily ups and downs of the stock market. Over time, your small monthly contributions grow into a significant amount of wealth thanks to the steady growth of the economy. It is a simple, 'set it and forget it' method that allows even beginners to participate in the stock market safely and effectively.</p>" },
+                                    { id: 41, title: "Power of Compounding", content: "<h2>Power of Compounding</h2><p>Compounding is often called the eighth wonder of the world because of its incredible ability to turn small amounts of money into a fortune. In simple terms, compounding is the process where the returns you earn on your investment start earning their own returns. Instead of just earning interest on your original deposit, you begin earning 'interest on interest.' Over a long period, this creates a snowball effect that causes your wealth to grow faster and faster every year.</p><p>The most important factor in compounding is not how much money you invest, but how much time you give it. For example, if you start saving ₹5,000 a month when you are 20 years old, you will have significantly more money by age 60 than someone who starts saving ₹10,000 a month at age 35. This is because your money had an extra 15 years to compound and grow. The longer you stay invested, the more powerful the compounding effect becomes, eventually reaching a point where your earnings are much larger than the money you originally put in.</p><p>To truly benefit from compounding, you must remain patient and avoid withdrawing your money too early. Every time you take money out of your investment, you break the compounding cycle and force the snowball to start over from the beginning. By staying invested for decades, you allow the math to work in your favor. Compounding is the ultimate tool for anyone who wants to achieve financial freedom, as it allows your money to do the hard work of building wealth while you focus on your life.</p>" },
+                                    { id: 42, title: "SIP vs Lump Sum", content: "<h2>SIP vs Lump Sum</h2><p>There are two primary ways to put your money into mutual funds: as a one-time 'Lump Sum' or through a regular 'SIP.' A lump sum investment is when you put a large amount of money, like a bonus or an inheritance, into a fund all at once. This can be very profitable if you invest right before the market goes up. However, it is also much riskier because if you invest right before a market crash, the value of your large deposit could drop significantly in a very short time.</p><p>Investing via a Systematic Investment Plan (SIP) is generally the better choice for most people, especially those who earn a monthly salary. With a SIP, you spread your investment over many months, which protects you from the risk of investing all your money at a market 'peak.' Because you are buying both when the market is expensive and when it is cheap, you benefit from rupee cost averaging. This makes SIPs much less stressful than lump sum investing, as you don't have to worry about the 'perfect' day to buy.</p><p>The choice between the two depends on your financial situation and your personality. If you have a large amount of cash sitting idle, a lump sum might be appropriate to get that money working immediately. But for your regular savings, a SIP is the gold standard for long-term wealth building. It encourages a healthy habit of saving every month and ensures that you remain a steady investor regardless of whether the market is up or down. Most successful investors use a combination of both to maximize their returns.</p>" },
+                                    { id: 43, title: "Small, Mid & Large Cap Funds", content: "<h2>Understanding Market Caps</h2><p>In the world of mutual funds, companies are often categorized into three sizes: Large Cap, Mid Cap, and Small Cap. Large Cap funds invest in the top 100 giant companies of the country. These are well-established businesses like big banks and technology firms that are unlikely to fail. They offer the most safety and stability, making them a great 'anchor' for your portfolio. While they may not grow as fast as smaller companies, they provide steady returns and are less likely to crash heavily in a bad market.</p><p>Mid Cap funds invest in medium-sized companies that are already successful but still have a lot of room to grow. These companies are more aggressive and have the potential to deliver much higher returns than Large Cap giants. However, they are also more volatile, meaning their prices can swing up and down more dramatically. Mid Cap funds are ideal for investors who already have a solid base of safe investments and are now looking to accelerate their wealth growth with a moderate amount of extra risk.</p><p>Small Cap funds focus on tiny, emerging companies or startups. These offer the thrilling possibility of multiplying your money many times over if the company becomes a future giant. However, they are also the riskiest of the bunch; many small companies fail during tough economic times. You should only invest a small portion of your wealth in Small Cap funds and be prepared for a bumpy ride. A well-balanced financial plan usually includes a mix of all three to provide a perfect blend of safety and high-growth potential.</p>" },
+                                    { id: 44, title: "How to Select a Mutual Fund", content: "<h2>How to Select a Mutual Fund</h2><p>With thousands of mutual fund schemes available, selecting the right one can feel overwhelming for a beginner. The first step is to clearly define your financial goal and your timeline. If you need the money in two years for a vacation, you should stick to safe debt funds. If you are saving for retirement twenty years away, you should prioritize equity funds for higher growth. Matching the right type of fund to your specific life goal is the foundation of a smart investment plan.</p><p>Once you know the category, you should look at the fund's historical track record and its 'Expense Ratio.' The expense ratio is the annual fee the fund company charges you for managing your money. A lower expense ratio means more of your profit stays in your pocket. You should also check the experience and reputation of the Fund Manager. A manager who has successfully navigated previous market crashes and delivered steady returns for a long time is usually more reliable than one who has only seen good times.</p><p>Finally, you should choose between a 'Direct' plan and a 'Regular' plan. Direct plans have much lower fees because you are not paying commissions to a middleman. Over 20 years, choosing a Direct plan can increase your final wealth by lakhs of rupees. Avoid picking a fund just because it was the 'top performer' last year, as the best fund of today often becomes the average fund of tomorrow. Instead, look for consistency, low costs, and a strategy that you personally understand and feel comfortable with.</p>" },
+                                    { id: 45, title: "Expense Ratio & NAV Explained", content: "<h2>Expense Ratio & NAV Explained</h2><p>Understanding Net Asset Value (NAV) and Expense Ratio is essential for every mutual fund investor. NAV is simply the 'price' of one unit of the mutual fund. It is updated at the end of every business day after the stock market closes. Many beginners mistakenly think a low NAV means a fund is 'cheap' or a bargain, but this is not true. It doesn't matter if you own 100 units at ₹10 or 2 units at ₹500; the value of your investment is determined by the percentage growth of the fund, not the raw price of the units.</p><p>The Expense Ratio is the annual management fee charged by the mutual fund company as a percentage of your total investment. This fee covers things like the fund manager's salary, administrative costs, and marketing. While a 1 or 2 percent fee sounds small, it can have a massive impact over many years. Because this fee is deducted every single day from the NAV, a high expense ratio acts like a 'silent leak' in your wealth-building bucket. Always compare the expense ratios of similar funds and prioritize those with lower costs to keep more of your profit.</p><p>It is important to remember that the NAV you see reported in the news is already 'net' of the expense ratio. This means the costs have already been subtracted from your returns. Therefore, when comparing two identical funds, the one with the lower expense ratio will almost always deliver a higher final NAV to you over the long term. By keeping a close eye on these numbers, you can ensure that you are getting the best value for your money. Smart investors focus on minimizing costs and ignoring the raw unit price to achieve the best possible long-term results.</p>" }
+                                ]
+                            },
+                            {
+                                id: 9,
+                                title: "Stock Market Basics",
+                                icon: "bi-bar-chart",
+                                articles: [
+                                    { id: 46, title: "How stock market works", content: "<h2>How the Stock Market Works</h2><p>The stock market is a secure digital marketplace where buyers and sellers trade shares of publicly listed companies. When a company needs a lot of money to grow—for example, to build more factories or invent new products—it divides its ownership into millions of tiny pieces called shares. It then sells these shares to the common public. By purchasing even one share, you legally become a part-owner of that business. The stock exchange is simply the technology that allows these owners to buy and sell their pieces to each other easily every day.</p><p>The price of a single share is determined by the simple laws of supply and demand. If the company is performing well, increasing its profits, and inventing exciting new things, more people will want to own its shares. This high demand causes the price to go up. Conversely, if a company is losing money or facing heavy competition, people might want to sell their shares to avoid losses, which causes the price to drop. As an investor, your goal is to buy shares of high-quality companies and hold them while the businesses grow over many years.</p><p>Successful investing in the stock market requires a long-term mindset and a lot of patience. The market can be very volatile in the short term, with prices jumping up and down every day based on the news or the opinions of traders. However, over a decade or more, the stock market has historically been one of the best ways to build significant wealth. By becoming a partner in successful businesses, you allow your money to grow alongside the country's most innovative and profitable corporations. It is the ultimate tool for turning a regular salary into life-changing wealth.</p>" },
+                                    { id: 47, title: "What is NIFTY & SENSEX?", content: "<h2>What is NIFTY & SENSEX?</h2><p>With thousands of companies listed on the Indian stock exchanges, it is impossible for a regular person to track every single one of them. To solve this problem, we use 'Stock Market Indices' like the NIFTY and the SENSEX. Think of an index as a financial thermometer that measures the overall health of the entire economy. It tracks a small, prestigious group of the largest and most successful companies in the country to give you a quick snapshot of how the total market is performing on any given day.</p><p>The NIFTY 50 is the most famous index on the National Stock Exchange (NSE). It tracks the combined share prices of the 50 largest companies in India across different industries like banking, technology, and energy. The SENSEX is a similar index but it tracks the top 30 companies on the Bombay Stock Exchange (BSE). When you hear in the news that the 'market is up by 2 percent,' it usually means that the average price of these top 30 or 50 giant companies has increased. They represent the leaders of the national economy.</p><p>These indices are incredibly important because they act as the 'benchmark' for all other investments. When you invest in a mutual fund, you compare its performance against the NIFTY 50 to see if your fund manager is actually doing a good job. Many smart investors today simply choose to buy 'Index Funds,' which automatically invest your money into all the companies in the NIFTY 50. This ensures that your wealth grows in line with the nation's biggest and best businesses without you needing to pick individual winning stocks yourself.</p>" },
+                                    { id: 48, title: "Demat account explained", content: "<h2>Demat Account Explained</h2><p>In the past, when you bought a stock, you were given a physical piece of paper called a share certificate to prove your ownership. These papers were vulnerable to being lost, stolen, or even eaten by termites. To make investing safer and faster, the world moved to a digital system. This is where a 'Demat account' comes in. The word Demat is short for 'Dematerialized,' which simply means turning physical paper into digital data. Just like your bank account holds your digital cash, your Demat account holds your digital shares.</p><p>In modern India, you cannot buy or sell a single stock without an active Demat account. When you use a brokerage app to buy a stock, the shares don't stay with the broker; they are placed in your personal Demat account. This account is managed by huge government-regulated organizations called 'Depositories.' Even if your broker goes bankrupt or their app stops working, your shares are perfectly safe because they are sitting in your own name in the depository. This system provides a very high level of security for all retail investors.</p><p>Opening a Demat account is a very simple process today and can be done online in just a few minutes using your Aadhaar and PAN card. Most people use a 'Three-in-One' account which links their savings bank account, their trading account (where you place buy/sell orders), and their Demat account (where the shares are stored). When you buy a stock, the money is taken from your bank account and the shares are delivered to your Demat vault. This seamless digital process has made the stock market accessible to millions of people sitting at home with just a smartphone.</p>" },
+                                    { id: 49, title: "Dividends: Sharing the Profits", content: "<h2>Dividends Explained</h2><p>When a large, well-established company makes significantly more profit than it needs for its daily operations, it often decides to share some of that extra cash with its owners. This payment is called a 'Dividend.' As a shareholder, you are a part-owner of the company, and receiving a dividend is like getting your share of the business's success. This is one of the most exciting ways to earn money from the stock market because it provides you with regular cash without you needing to sell your shares.</p><p>Dividends essentially function as a form of passive income. Many mature companies, like big utility firms or banks, pay dividends every few months. For long-term investors, building a portfolio of 'dividend-paying' stocks can create a steady stream of income that grows over time. Imagine owning shares of a company for 20 years; eventually, the annual dividends you receive might even be larger than the original amount you paid for the stock! It is a great way for retirees or conservative investors to get a regular 'salary' from their investments.</p><p>However, it is important to understand that not every company pays a dividend. Young, fast-growing companies often prefer to keep 100 percent of their profit and reinvest it back into the business to grow even faster. Instead of a cash payment, you get a higher share price. Neither approach is 'better' than the other; it just depends on your goals. Dividends are great for immediate cash flow and safety, while non-dividend stocks are often better for aggressive long-term growth. A smart investor chooses a mix of both to ensure they have both cash in hand and a growing total net worth.</p>" },
+                                    { id: 50, title: "Trading vs Investing", content: "<h2>Trading vs Investing</h2><p>Many people confuse 'Trading' with 'Investing,' but they are actually two completely different approaches to the stock market. Trading is a short-term strategy where you buy and sell stocks within days, hours, or even minutes. A trader is not interested in the long-term success of the business; they are only looking to profit from small, quick changes in the share price. Trading requires a lot of technical skill, constant monitoring of the news, and an ability to handle extreme stress, as prices can move against you very quickly.</p><p>Investing, on the other hand, is a long-term journey focused on the actual growth of a business. An investor buys shares of a company because they believe it will be much more successful and valuable ten years from now. They don't care about the daily ups and downs of the stock market. Investing is much less stressful and takes very little time, as you only need to check your portfolio once or twice a year. History shows that for most regular people, long-term investing is much more profitable and reliable than frequent short-term trading.</p><p>The biggest risk in trading is that it relies on 'market timing,' which is incredibly difficult even for professionals. Most day traders actually end up losing money because of high fees and emotional decision-making. Investors succeed by using 'time in the market' rather than 'timing the market.' By staying invested through the good times and the bad, you capture the true power of compound interest. For anyone looking to build lasting wealth while focusing on their regular job, long-term investing is the undisputed smartest path to follow.</p>" },
+                                    { id: 51, title: "Basic do's and don'ts", content: "<h2>Basic Do's and Don'ts</h2><p>The most important 'Do' of the stock market is to always invest for the long term. You should only use money that you do not need for at least five to seven years. This long timeline gives your companies enough path to grow and recover from any temporary economic recessions. Another critical 'Do' is to diversify. Never put more than 10 percent of your wealth into a single company. By spreading your money across different industries, you protect yourself if one specific sector, like airlines or tourism, has a very bad year.</p><p>The biggest 'Don't' of the stock market is to never borrow money to invest. This is called 'trading on margin,' and it is how many amateurs lose their entire life savings or end up in massive debt. If the market crashes and you used borrowed money, the bank can force you to sell your shares at the worst possible time. Another big 'Don't' is to never follow 'hot tips' or random recommendations from WhatsApp groups or social media. If everyone is talking about a stock, it is usually already too expensive and risky to buy.</p><p>Finally, 'Don't' panic sell when the market drops. Every few years, the stock market naturally experiences a 'correction' where prices drop by 10 or 20 percent. This is a normal part of the financial cycle. For a long-term investor, a market crash is actually a good thing because it allows you to buy more shares of great companies at a lower price. If you have the discipline to stay calm while others are panicking, you will eventually be rewarded with massive wealth. Discipline, not intelligence, is the greatest superpower in the stock market.</p>" }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: "Level 3: Advanced",
+                        subtitle: "Wealth Building Strategy",
+                        class: "badge-advanced",
+                        modules: [
+                            {
+                                id: 10,
+                                title: "Advanced Tax Strategy",
+                                icon: "bi-briefcase",
+                                articles: [
+                                    { id: 52, title: "Capital gains tax (Short vs Long term)", content: "<h2>Capital Gains Tax (Short vs Long Term)</h2><p>When you sell an investment for a profit, the government classifies that profit as a 'Capital Gain' and applies a specific tax based on how long you held the asset. This system is designed to encourage long-term investing and reward patient investors who keep their money working in the economy for several years rather than just a few days.</p><p>If you purchase a stock and sell it within a single year, the profit is categorized as a Short-Term Capital Gain (STCG). This is often viewed as short-term trading and is taxed at a flat rate of 15% (or 20% under recent proposals). This higher rate is meant to stabilize the market by discouraging frequent buying and selling, which can lead to sudden price swings.</p><p>Conversely, if you hold the investment for more than one year before selling, you benefit from the Long-Term Capital Gains (LTCG) tax rate. Currently, the government allows a certain amount of long-term profit per financial year to be completely tax-free, with anything above that amount taxed at a lower rate of 12.5%. This makes long-term holding one of the most tax-efficient ways to grow your wealth over time.</p>" },
+                                    { id: 53, title: "Tax on mutual funds", content: "<h2>Tax on Mutual Funds</h2><p>The taxation of a mutual fund depends on whether the fund primarily invests in the stock market (Equity) or in government bonds (Debt). Equity Mutual Funds are treated similarly to direct stocks by the tax department. Holding an equity fund for more than twelve months qualifies it for long-term capital gains tax benefits, which helps you keep more of your investment growth.</p><p>Debt Mutual Funds focus on providing stability and regular income. Any profit generated from selling a Debt Mutual Fund is generally added to your total income and taxed according to your personal income tax slab. This means that if you are in a higher tax bracket, you may pay more tax on your debt fund gains compared to equity funds, so it is important to plan your debt investments carefully.</p><p>For most investors, a mix of both equity and debt funds is necessary for a balanced portfolio. While equity funds offer better tax efficiency for long-term growth, debt funds provide the safety needed for short-term goals. By understanding how each type is taxed, you can choose the right funds that match your financial situation and help you reach your goals while paying only the necessary amount of tax.</p>" },
+                                    { id: 54, title: "Tax on stocks", content: "<h2>Tax on Stocks</h2><p>Directly buying and selling individual stocks follows the same tax rules as equity mutual funds. When building a long-term stock portfolio, understanding tax efficiency helps you maximize your final wealth. If you hold shares of high-quality companies for many years, your wealth can grow steadily without the burden of annual taxes, as you only pay tax when you eventually sell.</p><p>When you decide to sell your shares, the government currently provides a tax-free limit on long-term profits every year. Many investors use a strategy called 'Tax Harvesting' to take advantage of this. By strategically selling some of their stocks to capture the tax-free profit limit and then reinvesting that money, they can gradually increase their investment base without paying unnecessary taxes along the way.</p><p>Over a long career, consistently using these tax-saving rules can save an investor a significant amount of money. This extra savings can then be reinvested to earn even more through compound interest. By thinking about taxes as part of your overall investment plan, you can ensure that you are building your future in the most efficient way possible while following all the legal guidelines.</p>" },
+                                    { id: 55, title: "Tax-saving investments", content: "<h2>Tax-Saving Investments</h2><p>While standard tax-saving options like Section 80C are a great start, there are other strategies you can use to protect your savings. One powerful tool is the National Pension System (NPS), which offers an additional tax deduction specifically for retirement savings. This allows you to set aside extra money for your future while reducing the amount of tax you owe today.</p><p>Another common way to manage taxes is by investing in the name of family members who may be in a lower tax bracket. For example, gifting money to parents or a spouse and investing it in their name is a legal way to reduce the total tax the family pays as a whole. This helps everyone grow their collective wealth faster while ensuring that each family member is also building their own financial security.</p><p>For those who want safety and tax efficiency, there are also specialized options like Tax-Free Bonds or the Public Provident Fund (PPF). These tools allow your money to earn interest without you having to pay any tax on the gains. By combining these different tax-saving tools, you can create a comprehensive plan that protects your income and helps you reach your financial milestones much sooner.</p>" },
+                                    { id: 56, title: "Salary structure optimization", content: "<h2>Salary Structure Optimization</h2><p>When looking at a job offer, it is important to look beyond just the total salary number. How your salary is structured determines how much of it you actually get to take home after taxes. A large portion of your salary might be fully taxable, but many employers offer allowances and benefits that can reduce your tax burden if used correctly.</p><p>Common examples include house rent allowance (HRA), travel allowances, and reimbursements for things like internet or phone bills. You can also choose to increase your contributions to the Employee Provident Fund (EPF), which not only saves you tax today but also builds a large nest egg for your retirement. By opting for these benefits, you effectively increase your take-home pay without needing a salary raise.</p><p>It is worth speaking with your Human Resources department to see if your salary can be restructured to be more tax-efficient. Small changes in how your pay is divided can lead to thousands of rupees in tax savings every year. Over a long professional career, this extra money can be invested to grow into a substantial amount, providing you with even more financial freedom in the future.</p>" }
+                                ]
+                            },
+                            {
+                                id: 11,
+                                title: "Stock Analysis Basics",
+                                icon: "bi-search",
+                                articles: [
+                                    { id: 57, title: "P/E Ratio Explained", content: "<h2>P/E Ratio Explained</h2><p>The Price-to-Earnings (P/E) ratio is one of the most common ways to tell if a stock is cheap or expensive. You calculate it by taking the current market price of one share and dividing it by the amount of profit the company makes per share (EPS). Essentially, the P/E ratio tells you how much investors are willing to pay for every single Rupee of profit the company generates. For example, if a stock costs ₹100 and earns ₹10, its P/E ratio is 10. This number helps you compare different companies in the same industry to see which one offers better value for your money.</p><p>A very high P/E ratio often means that investors are excited and expect the company to grow very quickly in the future. However, you should be careful, as a high price can also mean the stock is 'overvalued' or too expensive compared to its actual earnings. If the company fails to grow as fast as everyone expects, the stock price could drop significantly. On the other hand, a low P/E ratio might mean the stock is a 'bargain,' but it could also mean the company is struggling. This is why it is important to look at the business and its competitors rather than just focusing on one single number.</p><p>Successful investors use the P/E ratio as a starting point for their research rather than a final answer. By comparing a company's current P/E ratio to its own history over the last 5 or 10 years, you can see if the stock is currently trading at a fair price. You should also look at the P/E ratios of other companies in the same sector. For example, technology companies often have much higher P/E ratios than utility companies. By understanding these differences, you can make smarter decisions about when to buy a stock and when it might be better to wait for a lower price.</p>" },
+                                    { id: 58, title: "EPS & ROE Basics", content: "<h2>EPS & ROE Basics</h2><p>Earnings Per Share (EPS) is a simple way to measure how much profit a company is making for its owners. You find this number by taking the company's total annual profit and dividing it by the total number of shares they have issued. For example, if a company makes ₹10 Crores in profit and has 1 Crore shares, its EPS is ₹10. A company that consistently increases its EPS every year is usually very healthy and well-managed, as it shows they are finding ways to grow their business and increase value for their shareholders over time.</p><p>Return on Equity (ROE) is another critical number that shows how efficiently the management team is using the money invested by shareholders. It is expressed as a percentage and tells you how much profit the company makes for every Rupee of equity held by the owners. If you invest ₹100 and the company generates ₹15 in profit using that money, the ROE is 15%. A high ROE generally indicates that the company is very good at turning your investment into growth without needing to take on too much debt, which is a sign of a strong business model.</p><p>When analyzing a stock, you should look for companies that maintain a steady and high ROE for many years. It is also important to compare the ROE to the company's debt levels. Sometimes, a company can artificially increase its ROE by borrowing a lot of money, which can be risky if the economy takes a downturn. By combining EPS growth with a strong ROE, you can identify high-quality businesses that are likely to perform well in the long term. These two metrics are the foundation of understanding whether a company is truly making money efficiently for its investors.</p>" },
+                                    { id: 59, title: "Fundamental vs Technical Analysis", content: "<h2>Fundamental vs Technical Analysis</h2><p>Fundamental Analysis is the process of studying the actual business behind a stock. This involves looking at a company's financial statements, its products, its competitors, and the quality of its management. The goal is to determine the 'intrinsic value' or the 'real' worth of the company. If you believe the real value of a business is higher than its current market price, you buy the stock with the hope that the price will eventually rise to meet its true value. This is the strategy used by most successful long-term investors like Warren Buffett.</p><p>Technical Analysis takes a completely different approach by focusing strictly on the movement of the stock price itself rather than the business. Technical traders use charts, patterns, and mathematical indicators to predict whether a stock will go up or down in the short term. They believe that historical price movements tend to repeat themselves and that all relevant information is already reflected in the stock price. This method is often used for day trading or short-term speculation rather than long-term wealth building, as it requires constant monitoring of the market.</p><p>Both methods have their own place in the financial world, but they serve different goals. Fundamental analysis is generally better for long-term investors who want to build wealth over decades by owning great companies. Technical analysis is more suited for active traders who want to make quick profits from small price changes. For most beginners, focusing on fundamental analysis is safer and more reliable, as it teaches you to think like a business owner. By understanding what makes a company successful, you can stay calm during market ups and downs and focus on the long-term growth of your money.</p>" },
+                                    { id: 60, title: "How to Read Company Basics", content: "<h2>How to Read Company Basics</h2><p>You don't need to be an expert accountant to understand if a company is doing well. The first thing you should check is the 'Top Line' and 'Bottom Line.' The Top Line refers to the company's total sales or revenue. If this number is growing every year, it means people are buying more of the company's products or services. The Bottom Line refers to the net profit the company has left after paying all its expenses and taxes. For a business to be successful in the long run, both sales and profits should ideally be growing at a steady pace together.</p><p>Another important thing to check is how much debt the company has compared to its equity. This is called the 'Debt-to-Equity' ratio. While some debt can be good for growth, too much debt can be a big problem, especially if the company has to pay a lot of interest every month. A company with very little debt is much safer because it can survive difficult economic times more easily. If you see a company whose debt is much larger than its total assets, it might be a sign that the business is in trouble and could be a risky investment for your hard-earned money.</p><p>Finally, you should look at 'Promoter Holding,' which shows how much of the company is owned by the original founders. If the founders own a large percentage of the shares, it shows they believe in the future of the business and have a strong reason to see it succeed. If they are quickly selling off their own shares, it might be a red flag that something is wrong. By checking these basic numbers—sales growth, profit, debt levels, and founder ownership—you can get a very good sense of whether a company is a safe and smart place to invest your money for the long term.</p>" },
+                                    { id: 61, title: "Long-term Investing Strategy", content: "<h2>Long-Term Investing Strategy</h2><p>Long-term investing is one of the most reliable ways to build wealth because it allows you to benefit from the growth of the overall economy. The core idea is to buy shares of high-quality companies and hold onto them for 10, 20, or even 30 years. This approach requires a lot of patience and the ability to ignore the daily noise and panic of the financial news. By staying invested for the long term, you give your money time to grow through compound interest and avoid the high costs of frequent trading and short-term taxes.</p><p>The stock market will naturally go through periods where prices drop quite a bit, which is often called a 'market correction.' For a long-term investor, these drops are actually opportunities rather than reasons to worry. Instead of panicking and selling when prices are low, you should continue your regular investments or even buy more if you have extra cash. Because you are holding for many years, a temporary drop today will not affect your final goals if the underlying business remains strong. The key is to remain disciplined and focused on your ultimate financial destination.</p><p>A simple long-term strategy is to invest in a diversified group of companies across different industries like technology, banking, and healthcare. You can do this by picking individual stocks or by using low-cost index funds and mutual funds. By spreading your money around, you protect yourself from the risk of one single company or industry performing poorly. If you stay consistent with your savings and avoid making emotional decisions based on fear or greed, you will find that the stock market is a powerful engine for building the wealth you need for a comfortable retirement and a secure future.</p>" }
+                                ]
+                            },
+                            {
+                                id: 12,
+                                title: "Portfolio Building",
+                                icon: "bi-grid-3x3-gap",
+                                articles: [
+                                    { id: 62, title: "Asset Allocation Strategy", content: "<h2>Asset Allocation Strategy</h2><p>Asset allocation is the practice of dividing your total savings across different types of investments like stocks, fixed deposits, gold, and real estate. This is often described as the most important decision you can make for your financial future. Instead of putting all your money into one place, you spread it around based on your age, your goals, and how much risk you are comfortable taking. For example, a younger person might put more money into stocks for growth, while someone closer to retirement might prefer the safety of fixed deposits and government bonds.</p><p>A common rule of thumb for asset allocation is the '100 minus age' rule. If you are 30 years old, you subtract 30 from 100 to get 70. This suggests that you should keep roughly 70 percent of your wealth in stocks (equity) and the remaining 30 percent in safer debt instruments like FDs. As you get older, your allocation gradually shifts away from stocks and towards safer investments. This ensures that your portfolio becomes more stable as you approach the time when you will actually need to spend the money, protecting your savings from sudden market fluctuations.</p><p>The goal of a smart asset allocation strategy is to achieve the best possible returns while keeping your stress levels low. By having a mix of different assets, you ensure that your portfolio doesn't rely on just one part of the economy doing well. If the stock market has a bad year, your fixed deposits and gold can help offset the losses and keep your total wealth stable. You should review your allocation once or twice a year to ensure it still matches your current life situation and your long-term financial goals. It is a simple but powerful way to manage risk and grow your wealth at the same time.</p>" },
+                                    { id: 63, title: "Importance of Diversification", content: "<h2>The Importance of Diversification</h2><p>Diversification is a fancy word for a very simple and ancient piece of advice: 'Don't put all your eggs in one basket.' In the world of investing, this means spreading your money across many different companies and industries rather than gambling everything on just one or two stocks. Even the most successful companies in the world can face unexpected problems, and if you have all your money in just one place, a single bad event could destroy your entire life savings. Diversification is your primary shield against these kinds of massive losses.</p><p>You can diversify in several ways, such as by owning stocks in different sectors like technology, healthcare, and energy. You can also diversify by company size, holding shares in both massive global giants and small, growing businesses. For most people, the easiest way to achieve great diversification is through mutual funds or index funds, which automatically spread your money across hundreds of different companies. This way, even if a few companies fail, the success of the remaining hundreds ensures that your total investment continues to grow safely over time.</p><p>True diversification also means looking beyond just the stock market. You should also have some money in 'debt' instruments like fixed deposits or bonds, and perhaps a small amount in gold or real estate. These different types of investments often move in different directions; when stocks are going down, gold or bonds might be going up. By holding a mix of uncorrelated assets, you smooth out the ups and downs of your portfolio and make the journey to wealth much less stressful. It is the best way to ensure that you are protected regardless of what happens in the global economy.</p>" },
+                                    { id: 64, title: "Risk Profiling", content: "<h2>Risk Profiling</h2><p>Before you start investing, it is essential to understand your personal 'Risk Profile.' This is basically a measure of how much risk you can handle both financially and emotionally. Some people are very comfortable with the idea that their portfolio might go up and down in value, while others feel very anxious if they see even a small loss. Your risk profile depends on things like your age, your monthly income, your total savings, and how much time you have before you need the money. Being honest with yourself about your risk profile is the key to creating a plan you can actually stick to.</p><p>For example, a person with a 'Conservative' risk profile should focus heavily on safe investments like fixed deposits, government bonds, and large-cap mutual funds. They prioritize keeping their money safe over making massive profits. On the other hand, an 'Aggressive' investor might be willing to put more money into small-cap stocks or sector funds, knowing that while they might see large losses in the short term, they have a better chance of achieving huge wealth over many years. Most people fall somewhere in the middle, preferring a 'Balanced' approach that offers a mix of safety and growth.</p><p>Your risk profile can also change over time as your life situation changes. When you start your first job, you might be very aggressive because you have decades of earning ahead of you. However, once you have a family or are nearing retirement, you will likely become more conservative to protect what you have already built. You should regularly assess your feelings about your investments, especially during a market crash. If a 10% drop makes you want to sell everything, your portfolio might be riskier than you can actually handle. A good financial plan is one that lets you sleep peacefully at night while still helping you reach your goals.</p>" },
+                                    { id: 65, title: "Rebalancing Portfolio", content: "<h2>Rebalancing Your Portfolio</h2><p>Rebalancing is the simple process of bringing your portfolio back to your original target allocation. Imagine you decided on a plan where 60% of your money is in stocks and 40% is in safe fixed deposits. If the stock market has a fantastic year and grows very quickly, yours stocks might eventually make up 75% of your total wealth. While having more money sounds great, your portfolio is now much riskier than you originally intended. Rebalancing means selling some of your stocks and putting that money into fixed deposits to bring the ratio back to 60/40.</p><p>This process might feel strange because it forces you to sell your 'winners' and buy more of your 'losers.' However, this is actually a brilliant way to follow the ultimate rule of investing: 'Buy Low and Sell High.' By selling some of the stocks that have grown rapidly, you are locking in your profits while the price is high. You then use that cash to buy more of the safer assets while they are relatively cheaper. This systematic approach ensures that you are constantly moving money from expensive areas to cheaper ones, which naturally improves your long-term returns and keeps your total risk at a level you are comfortable with.</p><p>Most experts recommend rebalancing your portfolio once a year or whenever your allocation drifts by more than 5 or 10 percent. It doesn't need to be a complicated process; you can simply shift your future monthly investments towards the assets that are currently below their target percentage. By being disciplined about rebalancing, you avoid the common mistake of becoming too aggressive during a 'bull market' and too conservative during a 'bear market.' It is a boring but highly effective habits that helps you stay on track for your long-term goals regardless of the market's temporary moods.</p>" },
+                                    { id: 66, title: "Combining FD + SIP + Stocks", content: "<h2>Combining FD + SIP + Stocks</h2><p>A well-rounded financial plan doesn't just use one tool; it combines different types of investments to cover all your needs. You can think of your portfolio as a pyramid. At the very bottom is the foundation, which should be safe and accessible. This is where your Fixed Deposits (FDs) come in. They provide your emergency fund and the money you might need for short-term goals within the next two years. FDs give you total peace of mind because you know the money will be there exactly when you need it, regardless of what the stock market is doing.</p><p>The middle and largest part of your pyramid is the Systematic Investment Plan (SIP) in mutual funds. This is where most of your monthly savings should go for long-term goals like retirement or a child's education. By investing in a diversified mix of equity and debt mutual funds every month, you automate your wealth-building journey. SIPs take advantage of compounding and rupee cost averaging, allowing you to grow your wealth steadily over many years without needing to spend much time on research. This is the 'engine' that will drive your financial future for decades to come.</p><p>At the very top of the pyramid is a small amount for direct stock investing. Once your core needs are secured by FDs and your long-term future is on track with SIPs, you might choose to invest a small portion of your wealth—perhaps 5 or 10 percent—into individual companies that you have researched and believe in. This gives you the chance to achieve even higher returns and makes investing more interesting. By following this pyramid approach, you ensure that your basic survival is never at risk, even if your individual stocks don't perform as well as you hoped. It is a balanced strategy for lifelong financial success.</p>" }
+                                ]
+                            },
+                            {
+                                id: 13,
+                                title: "Goal-Based Investing",
+                                icon: "bi-flag",
+                                articles: [
+                                    { id: 67, title: "Planning for a House", content: "<h2>Planning for a House</h2><p>Buying a house is one of the biggest financial decisions you will ever make and requires careful, long-term preparation. Because a house usually involves a massive down payment and a long-term home loan, you need to start saving several years in advance. Since you have a specific target amount and a fixed deadline, your priority should be the safety of your money rather than high growth. You don't want to find that your house savings have dropped by 20% because of a sudden stock market crash right when you are ready to sign the papers.</p><p>For a goal like a house that is 3 to 5 years away, you should avoid risky equity investments and instead focus on safe debt instruments. Recurring Deposits, Short-Term Fixed Deposits, or Debt Mutual Funds are ideal choices. They offer steady, predictable returns and ensure that your principal amount is always safe. By setting aside a fixed amount every month specifically for your 'Home Fund,' you can build your down payment gradually and avoid the stress of trying to time the market. It is all about having the cash ready when you find the perfect property.</p><p>Before you commit to a home loan, it is also essential to ensure that the monthly payments (EMIs) fit comfortably within your budget. As a general rule, your total EMIs should not exceed 40 percent of your monthly take-home pay. You must also account for additional costs like property taxes, insurance, and regular maintenance. By planning your house purchase with a clear budget and a safe investment strategy, you can turn your dream of owning a home into a reality without compromising your other long-term financial goals like retirement.</p>" },
+                                    { id: 68, title: "Planning for a Car", content: "<h2>Planning for a Car</h2><p>A car is a lifestyle choice that also happens to be a depreciating asset, which means it loses value the moment you drive it away from the showroom. Because of this, taking a massive, high-interest loan to buy an expensive car is often considered a poor financial move. The best way to buy a car is to pay for as much of it as possible in cash. If you know you will want a new car in three or four years, you should start saving for it today. This proactive approach saves you thousands of rupees in interest payments and gives you more bargaining power at the dealership.</p><p>A smart way to save for a car is to start a 'Car SIP' in a liquid fund or a short-term debt fund. By treating your car savings like a monthly bill, you can accumulate the necessary funds over a few years without feeling a big pinch in your pocket. Because the car is a short-term goal, you should prioritize safety over high returns. Even if you still need to take a small loan to cover the remaining balance, having a large down payment will significantly lower your monthly EMIs and allow you to pay off the debt much faster, giving you more freedom with your money.</p><p>If you do decide to take a loan, it is helpful to follow the '20/4/10' rule: put at least 20% down, pay off the loan in 4 years or less, and keep your total car-related expenses (including insurance and fuel) under 10% of your monthly income. This ensures that your car doesn't become a burden that prevents you from reaching more important goals like buying a house or investing for the future. By planning your car purchase as a specific financial goal, you can enjoy the comfort and convenience of your new vehicle while still keeping your overall financial plan on the right track.</p>" },
+                                    { id: 69, title: "Retirement Planning Basics", content: "<h2>Retirement Planning Basics</h2><p>Retirement planning is the process of building a large enough fund so that you can live comfortably without a regular salary for 20 or 30 years after you stop working. The most important thing to understand about retirement is the impact of inflation. The amount of money you need for groceries, electricity, and healthcare will likely double or triple over the next few decades. This means your retirement fund needs to not only grow but also stay ahead of rising costs. Starting as early as possible is your greatest advantage, as it allows compound interest to do most of the hard work for you.</p><p>To reach a large retirement goal, you need to invest a significant portion of your savings in growth assets like equity mutual funds. While the stock market can be volatile in the short term, it has historically delivered much higher returns than fixed deposits or gold over 20-year periods. You should aim to invest at least 15 to 20 percent of your monthly income towards your retirement from the very start of your career. By automating this through a SIP, you ensure that you are consistently building your future wealth regardless of how busy or distracted you might be with your current life.</p><p>A simple way to estimate how much you need is the 'Rule of 25,' which suggests you should aim for a corpus that is 25 times your annual expenses. For example, if you spend ₹10 Lakhs a year today, you might need a fund of at least ₹2.5 Crores to retire comfortably, adjusted for inflation. As you get closer to your retirement age, you should gradually move your money from stocks into safer debt funds to protect what you have built. Retirement planning is not about getting rich quick; it is about ensuring that your future self has the same standard of living and peace of mind that you enjoy today.</p>" },
+                                    { id: 70, title: "Child Education Planning", content: "<h2>Child Education Planning</h2><p>Planning for your child's education is one of the most important financial goals for any parent, but it can be challenging because education costs often rise much faster than the general inflation rate. Whether it is for school fees, specialized coaching, or a university degree abroad, the costs can become massive over 15 or 20 years. To meet these expenses without taking on heavy debt or dipping into your retirement fund, you must start a dedicated investment plan as soon as your child is born. The more time you have, the less you need to save every month to reach your target.</p><p>For long-term education goals that are more than 10 years away, equity mutual funds are the best choice. They offer the potential for high growth that can keep up with the rising costs of top-tier colleges. You can start a dedicated SIP specifically for your child's future and treat it as a non-negotiable monthly expense. As your child grows and the goal gets closer—perhaps 3 years before they start college—you should start shifting that money into safer debt funds. This 'glide path' strategy ensures that you capture growth early on and then protect the capital when it is almost time to pay the tuition fees.</p><p>It is also important to involve your child in the process as they get older, teaching them the value of money and the importance of planning. In addition to investing for their degree, you should also ensure you have adequate life and health insurance to protect their future in case of any unexpected events. By treating education as a specific, long-term financial goal with its own dedicated SIP, you can give your child the best possible start in life without creating a financial burden for yourself. It is one of the greatest gifts you can ever provide for their future success and happiness.</p>" },
+                                    { id: 71, title: "Inflation-Adjusted Goals", content: "<h2>Inflation-Adjusted Goals</h2><p>Inflation is the silent force that gradually reduces what your money can buy over time. If a bag of groceries costs ₹1,000 today, it might cost ₹2,000 in ten years because of an average inflation rate of 7 percent. When you setting financial goals for the future, you must always account for this rising cost. If you only save for what a house or a college degree costs today, you will find yourself far short of the actual amount you need when the time finally comes to pay. This is why all smart financial planning must be 'inflation-adjusted.'</p><p>To calculate an inflation-adjusted goal, you need to estimate the 'future value' of your current expenses. For example, if a wedding costs ₹15 Lakhs today, and you are planning for it 10 years from now, you should use an online calculator to see what that ₹15 Lakhs will become with inflation. At 7 percent inflation, that wedding will cost nearly ₹30 Lakhs in a decade. This ₹30 Lakhs should be your true target, not the current price. By setting your sights on the future cost, you can determine the exact monthly SIP amount needed to reach your goal with confidence and certainty.</p><p>The best way to fight inflation is to prioritize investments that offer higher returns than the inflation rate. If inflation is 7% and your bank account only pays 3% interest, you are actually losing purchasing power every year. This is why growth assets like stocks and equity mutual funds are essential for long-term goals; they have historically been the best way to beat inflation. By regularly reviewing your goals and increasing your savings as your income grows, you can ensure that your financial plan stays relevant and that you will always have enough money to buy exactly what you need in the future.</p>" }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: "Level 4: Expert",
+                        subtitle: "Financial Independence & Optimization",
+                        class: "badge-expert",
+                        modules: [
+                            {
+                                id: 14,
+                                title: "Advanced Investing Strategy",
+                                icon: "bi-gem",
+                                articles: [
+                                    { id: 72, title: "Portfolio Optimization Concepts", content: "<h2>Portfolio Optimization</h2><p>Portfolio optimization is the process of building the most efficient collection of investments that gives you the best possible returns for a specific level of risk. Advanced investors often use the 'Core and Satellite' strategy to achieve this balance. The 'Core' makes up about 70 to 80 percent of your portfolio and is invested in broad, safe index funds that track the overall growth of the economy. This large foundation ensures that your life savings grow steadily and are well-protected from the failure of any single company or industry.</p><p>The 'Satellite' portion makes up the remaining 20 to 30 percent of your portfolio. This is where you can be more aggressive and invest in specific stocks, emerging technologies, or themes that you believe will grow faster than the average market. Because the satellite portion is relatively small, you can afford to take higher risks in search of 'alpha'—which is the financial term for beating the market. Even if your satellite investments perform poorly, your core index funds will keep your total financial plan on track, providing a perfect blend of safety and growth potential.</p><p>Efficient optimization also involves periodically reviewing how your different investments interact with one another. Ideally, you want to hold assets that are 'uncorrelated,' meaning they don't all move in the same direction at the same time. For example, when international stocks are down, domestic stocks or gold might be performing well. By combining these different assets in the right proportions, you can reduce the overall volatility of your portfolio. This allows you to achieve the same long-term wealth goals with much fewer heart-stopping drops along the way.</p>" },
+                                    { id: 73, title: "Passive vs Active Investing", content: "<h2>Passive vs Active Investing</h2><p>There are two main philosophies when it comes to managing your money: Active and Passive. Active investing involves a fund manager or an individual trying to 'beat the market' by picking specific stocks that they think will perform better than others. This requires a lot of research, frequent trading, and usually results in much higher fees. While it sounds exciting to find the 'next big thing,' history shows that it is extremely difficult to consistently outperform the total market over a long period of time after accounting for all the costs and taxes involved.</p><p>Passive investing, on the other hand, is a strategy where you simply aim to match the performance of the entire market. Instead of picking individual winners, you buy a fund that owns every company in a specific index, like the NIFTY 50. Since there is no expensive manager doing research, the fees are incredibly low. This 'buy the whole haystack' approach is based on the idea that the total economy will grow over time, and by owning a piece of everything, you are guaranteed to capture that growth without the risk of picking a failing company. Small fee differences might seem minor, but they can add up to lakhs of rupees over 20 years.</p><p>For most regular investors, a primarily passive strategy is the most effective path to wealth. Decades of data prove that low-cost index funds outperform the majority of expensive active funds over the long term. This is largely because the 'market' is actually the average performance of all investors, and by paying lower fees, passive investors start with a mathematical advantage. You can still use a small portion of your wealth for active stock picking if you enjoy the research, but your core retirement savings are usually safest and more profitable in broad, low-cost passive instruments.</p>" },
+                                    { id: 74, title: "Index Fund Strategy", content: "<h2>Index Fund Strategy</h2><p>An index fund is a type of mutual fund that automatically invests your money in all the companies of a specific market index. If you buy a NIFTY 50 index fund, you are essentially becoming a part-owner of the 50 largest and most successful companies in India. The fund manager's only job is to ensure the fund perfectly matches the index, which is why these funds have very low management costs. It is a 'rules-based' way of investing that removes human emotion and bias from the decision-making process, making it a very reliable long-term tool.</p><p>One of the most powerful features of an index fund is its 'self-cleansing' nature. The index is updated every six months to ensure it always represents the top companies. If a company that was once a giant starts to fail and shrink, it will eventually be removed from the index. It is then automatically replaced by a newer, faster-growing company that has climbed into the top ranks. This means that as an index fund investor, you are always owning the leaders of the economy without ever having to decide when to sell a loser or buy a new winner. The system does the hard work for you.</p><p>To build a successful index fund strategy, you should focus on broad markers rather than narrow sector funds. For example, a NIFTY 50 or a NIFTY Next 50 fund gives you exposure to the heart of the national economy. You can set up a monthly SIP and continue it through both good and bad times. Because the costs are so low and the diversification is so high, the index fund strategy is often called 'the ultimate lazy way to get rich.' By staying patient and consistently adding to your index holdings, you allow the collective growth of the nation's best businesses to build your wealth for you.</p>" },
+                                    { id: 75, title: "Market Cycle Understanding", content: "<h2>Understanding Market Cycles</h2><p>The stock market does not move in a straight line upward; it moves in waves or 'cycles.' A period of rising prices and optimism is known as a 'Bull Market,' while a period of falling prices and fear is called a 'Bear Market.' These cycles are a natural and healthy part of any economy. They are driven by things like interest rates, company profits, and most importantly, human psychology. Understanding that these waves are inevitable helps you stay calm when the market temporarily drops, as you know that a recovery is the natural next step of the cycle.</p><p>Most investors make the mistake of getting too excited when prices are at their peak and too scared when prices are at their lowest. When everyone is talking about how easy it is to make money, the market is usually in the late stages of a bull cycle and might be getting expensive. Conversely, when the news is full of gloom and everyone is selling, the market is likely near its bottom. Successful investors try to remain 'contrarian,' meaning they stay cautious when others are greedy and stay brave when others are fearful. This mindset allows you to avoid buying at the top and selling at the bottom.</p><p>A typical market cycle can last anywhere from a few years to more than a decade. Because you cannot predict exactly when a cycle will turn, the best strategy is to remain invested through all of them. By using a long-term approach, the 'dips' in the market become small bumps on a much larger upward journey. Instead of trying to 'time' the cycles, you should use 'time in the market' to your advantage. If you continue your regular investments during a bear market, you are actually buying more units at a discount, which will lead to even greater wealth when the next bull market inevitably arrives.</p>" },
+                                    { id: 76, title: "Long-term Wealth Formula", content: "<h2>The Long-Term Wealth Formula</h2><p>Building significant wealth over time is not about luck or having a secret tip; it is based on a very simple mathematical formula. The formula is: (Small Amount of Money) + (Consistency) + (Significant Time) = (Massive Wealth). Most people focus too much on the 'money' part of the equation and not enough on the 'time' and 'consistency' parts. Even a modest monthly savings amount, if invested consistently every single month without fail, will eventually grow into a fortune thanks to the incredible power of compound interest.</p><p>The biggest enemy of the wealth formula is the urge to stop or withdraw your money too early. Every time you skip a monthly investment or take money out for a non-essential purchase, you reset the compounding clock. To succeed, you must treat your long-term investments as a 'sacred' fund that you never touch until you reach your final destination. Automating your investments through a SIP is the best way to ensure consistency, as it takes the money out of your account before you have a chance to spend it on something else. This systems-based approach is far more effective than relying on willpower alone.</p><p>Finally, remember that the wealthiest people are often the most patient. The stock market is designed to transfer money from the 'active' (those who trade frequently and panic) to the 'patient' (those who buy and hold for decades). If you can survive the emotional roller coaster of the market without changing your plan, you will eventually reach a point where your investment returns are larger than your original salary. Wealth is a marathon, not a sprint. By following the simple formula of consistent, long-term investing, you guarantee yourself a future of financial independence and total peace of mind.</p>" }
+                                ]
+                            },
+                            {
+                                id: 15,
+                                title: "Advanced Tax & Wealth Management",
+                                icon: "bi-trophy",
+                                articles: [
+                                    { id: 77, title: "Tax-Efficient Investing", content: "<h2>Tax-Efficient Investing</h2><p>To truly grow your wealth, you must focus not just on how much you earn, but on how much you keep after taxes. Different types of investments are taxed in completely different ways by the government. For example, the interest you earn on a Fixed Deposit is added to your income and taxed at your full slab rate, which could be as high as 30 percent. On the other hand, profits from the stock market held for more than a year (Long-Term Capital Gains) are often taxed at a much lower flat rate. Understanding these rules allows you to choose investments that naturally leave more money in your pocket.</p><p>One of the best way to improve your tax efficiency is to use 'tax-deferred' accounts where possible. In India, tools like the Public Provident Fund (PPF) or the National Pension System (NPS) allow you to grow your money without paying any tax on the annual gains. Over 20 or 30 years, this lack of tax allows your money to compound significantly faster than it would in a regular taxable account. By strategically placing your long-term savings in these tax-friendly buckets, you can effectively increase your final wealth by lakhs of rupees without taking on any additional investment risk.</p><p>Tax efficiency also means being smart about when you sell your investments. In the stock market, you only pay tax when you 'realize' a gain by selling your shares. If you hold a high-quality stock for 20 years without selling, you don't pay any capital gains tax during those 20 years, even if the value of the stock doubles many times. This allows your full profit to stay invested and continue compounding. By planning your entries and exits around the tax rules, you can ensure that you are building your future wealth in the most efficient and legal way possible.</p>" },
+                                    { id: 78, title: "Estate Planning Basics", content: "<h2>Estate Planning Basics</h2><p>Estate planning is the process of deciding exactly how your wealth and assets will be distributed after you pass away. Many people believe this is something only for billionaires, but it is actually a vital step for every person who owns a home, a bank account, or an investment. Without a clear plan, your family might have to spend years in court and pay massive legal fees just to access the money you saved for them. Estate planning ensures that your loved ones are taken care of quietly and quickly, exactly as you intended.</p><p>The first step in estate planning is to create a complete list or 'inventory' of everything you own. This includes your bank accounts, insurance policies, properties, and even digital assets like your email and social media accounts. You should ensure that your family knows where to find this list and the necessary passwords. Often, millions of rupees go unclaimed simply because the family did not know the accounts existed. By organizing your financial life today, you remove a massive amount of stress and confusion for your family during a time when they will already be grieving.</p><p>A successful estate plan also involves choosing the right people to handle your affairs. This includes naming an 'Executor' for your will—someone you trust to carry out your instructions—and ensuring that your insurance beneficiaries are up to date. You can also use tools like 'Trusts' if you want to set specific rules for how the money should be spent, such as providing for a child's education over many years. While it might feel uncomfortable to think about the future, estate planning is one of the most loving and responsible things you can do for the people you care about most.</p>" },
+                                    { id: 79, title: "Nomination & Will Basics", content: "<h2>Nomination vs Wills</h2><p>There is a very common and dangerous misunderstanding about 'Nomination.' Most people believe that the person named as a nominee automatically becomes the owner of the money when the account holder dies. In reality, according to Indian law, a nominee is only a 'trustee' or a caretaker. Their only job is to receive the money from the bank and then distribute it to the legal heirs. If you want to ensure that a specific person actually owns the money, simply naming them as a nominee is not enough; you must also clearly state it in a Will.</p><p>A Will is a legally binding document that dictates exactly who should inherit your property and money. The instructions written in a properly signed and witnessed Will completely override the standard rules of inheritance. It is the only way to ensure that your assets go to the specific people or charities you choose. You don't need a lawyer to write a basic Will; as long as it is written clearly on plain paper and signed by you in front of two witnesses, it is a legal document. However, for large estates, having it registered with the government adds an extra layer of security.</p><p>To ensure a smooth transition of wealth, you should use both nominations and a Will together. You should have a nominee listed on every single bank account, insurance policy, and Demat account for the immediate transfer of funds. Then, you should have a Will that clearly names the final owners of those funds. You should review and update these documents every few years, especially after major life events like a marriage, the birth of a child, or the purchase of a new home. This double-layered system provides the ultimate protection for your wealth and your family's future.</p>" },
+                                    { id: 80, title: "High-Income Tax Strategy", content: "<h2>High-Income Tax Strategy</h2><p>When your income reaches the highest tax bracket, standard financial advice is no longer sufficient. If you are paying 30 percent tax on your salary, every rupee of extra income you earn from a fixed deposit is only worth 70 paise to you. To fight this 'tax drag,' you must shift your focus towards investments that offer better post-tax returns. Using tools like Equity-Linked Savings Schemes (ELSS) or maximizing your voluntary contributions to the Provident Fund are excellent ways to reduce your taxable income while still building long-term wealth.</p><p>Another advanced strategy is to spread the 'tax burden' across your family members. If you have parents or a spouse who are in a lower tax bracket, you can legally gift them money and invest it in their name. The interest earned on those investments will then be taxed at their lower rate (or not taxed at all if they are under the limit). This is a completely legal way to reduce your family's total tax bill and grow your collective wealth faster. However, you should always consult with a tax professional to ensure you are following the rules correctly and keeping proper records.</p><p>Finally, high-income earners should prioritize 'Capital Gains' over 'Interest Income.' Interest from FDs or Bonds is taxed every year at your highest rate. In contrast, capital gains from stocks or real estate are only taxed when you sell after many years, and often at a much lower rate. This allows you to 'defer' your taxes for decades and keep more of your money working for you. By intentionally choosing assets that grow in value rather than those that pay regular interest, you can significantly optimize your wealth and achieve your goals much sooner than you thought possible.</p>" }
+                                ]
+                            },
+                            {
+                                id: 16,
+                                title: "Behavioral Finance",
+                                icon: "bi-lightbulb",
+                                articles: [
+                                    { id: 81, title: "Emotional investing mistakes", content: "<h2>Emotional Investing Mistakes</h2><p>Human beings are biologically wired for survival in the wild, not for success in the modern stock market. For thousands of years, our ancestors survived by following the crowd and running away from danger. In the financial world, these instincts often lead to disaster. When the market is crashing and everyone is panicking, our 'fight or flight' response tells us to sell everything. When the market is booming and everyone is celebrating, our instinct is to join the crowd and buy. This causes most people to buy high and sell low, which is the exact opposite of what you should do.</p><p>One of the most common mistakes is 'Loss Aversion,' which means the pain of losing ₹1,000 feels much stronger than the joy of gaining ₹1,000. Because of this, many investors sell their winning investments too early just to lock in a small profit, while they hold onto their losing investments for years, hoping to break even. This behavior creates a portfolio full of losers and very few winners. To be successful, you must learn to detach your emotions from the daily price movements and focus on the cold, hard facts of the businesses you own. Success in investing is 10 percent intelligence and 90 percent discipline.</p><p>Another major trap is 'Recency Bias,' which is the tendency to believe that what happened recently will continue to happen in the future. If the market has been going up for three years, people assume it will go up forever and take on too much risk. If the market has been down for a few months, they assume it will never recover. By understanding these mental traps, you can stay calm while others are making emotional mistakes. The stock market is essentially a machine that transfers money from the impatient and emotional to the patient and disciplined. Your goal is to be on the patient side of that machine.</p>" },
+                                    { id: 82, title: "Fear & greed cycle", content: "<h2>The Fear & Greed Cycle</h2><p>The entire movement of the stock market is driven by two massive human emotions: Fear and Greed. During a 'Bull Market,' greed take center stage. People see their neighbors making easy money and don't want to be left behind. This 'FOMO' (Fear of Missing Out) causes them to buy stocks at extremely high prices regardless of value. When greed is at its peak, the market becomes a dangerous bubble that eventually must pop. Identifying when the market is driven purely by greed rather than logic is the first step in protecting your wealth from a future crash.</p><p>When the bubble pops, the cycle violently switches to Fear. The news media becomes full of terrifying stories, and investors begin to panic-sell their high-quality companies at any price just to stop the pain. This collective fear causes prices to drop much lower than they should, creating the absolute best buying opportunities of the decade. The famous advice to 'be fearful when others are greedy, and greedy when others are fearful' is easy to understand but incredibly hard to follow. It requires the courage to stand alone against the crowd and trust in your long-term plan even when everything looks dark.</p><p>The best way to handle the fear and greed cycle is to ignore it completely. Instead of trying to guess where the market is going, you should use a Systematic Investment Plan (SIP). A SIP forces you to buy when others are greedy (buying fewer units) and buy when others are fearful (buying more units at a discount). Over many cycles, this averages out your cost and ensures that you benefit from the general growth of the economy without ever having to time the market. By remaining calm and consistent, you turn the irrationality of other investors into your own long-term profit.</p>" },
+                                    { id: 83, title: "Overconfidence bias", content: "<h2>Overconfidence Bias</h2><p>Overconfidence is a silent killer of investment returns. It happens when an investor gets lucky and makes a few good stock picks, leading them to believe they have a unique talent for predicting the market. This false sense of genius causes them to take bigger and bigger risks, such as putting all their money into a single company or using borrowed money to trade. They begin to ignore warning signs and expert advice, believing that they 'know better' than the market. Eventually, their luck runs out, and a single bad decision wipes out all their previous gains and more.</p><p>Truly successful investors are often the most humble. They acknowledge that the future is unpredictable and that they could be wrong about any specific investment. To protect themselves from their own mistakes, they use 'Diversification' and 'Margin of Safety.' They don't bet everything on one idea, but spread their money across many different companies and industries. This way, even if they are wrong about a few stocks, the overall portfolio continues to grow. Humility allows you to stay safe and steady, while overconfidence leads to the kind of reckless behavior that causes permanent financial ruin.</p><p>To fight overconfidence, you should always keep an investment journey where you write down why you bought a stock and what your expectations were. Reviewing these notes later will help you see which successes were due to your skill and which were simply due to a lucky market trend. You should also actively seek out people who disagree with you and listen to their arguments. By constantly challenging your own beliefs and preparing for the worst-case scenario, you can keep your ego in check and ensure that your financial future is built on a solid foundation of facts rather than overconfident guesses.</p>" },
+                                    { id: 84, title: "How to stay disciplined", content: "<h2>How to Stay Disciplined</h2><p>Discipline is the bridge between your financial goals and actually reaching them. However, relying on pure willpower to save and invest every month is a strategy that often fails. Life is full of unexpected expenses, temptations, and distractions that make it easy to skip a month or spend your savings. The true secret to long-term discipline is not 'trying harder,' but building an environment that makes it almost impossible for you to fail. By setting up systems and rules today, you ensure that your future self stays on the right track even when your motivation is low.</p><p>The most effective way to automate your discipline is through a direct bank mandate for your investments. When your SIP money is deducted exactly on the day your salary arrives, you don't even have to think about it. You learn to live on the remaining 80 or 90 percent of your income, and your wealth grows quietly in the background. It is also helpful to have a 'Rule Book' for your investments. For example, you might have a rule that you never sell an investment unless you have held it for at least five years, or that you never check your portfolio more than once a month. These rules act as a shield against emotional decisions.</p><p>Finally, remember that discipline is a habit that gets easier over time. The first few years of saving and investing are the hardest because the growth is slow. However, once your portfolio reaches a certain size, the compounding starts to do the heavy lifting for you. Seeing your money grow to cover your annual expenses is a massive motivator that makes staying disciplined feel rewarding rather than like a sacrifice. Stay focused on your long-term 'Why'—whether it is early retirement, a child's future, or total freedom—and let that vision guide you through any temporary market storms. Your future self will thank you for the discipline you show today.</p>" }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            let currentFilter = 'All';
+
+            function filterModules(filterStr) {
+                currentFilter = filterStr;
+                // Update active wrapper state
+                document.querySelectorAll('.filter-btn-wrap').forEach(wrap => {
+                    const btn = wrap.querySelector('.filter-btn');
+                    if (btn && btn.innerText.trim() === filterStr) {
+                        wrap.classList.add('active');
+                    } else {
+                        wrap.classList.remove('active');
+                    }
+                });
+                initGrid();
+            }
+
+            const userId = '{{ user_id }}';
+            let completedArticles = [];
+
+            async function loadCompletedArticles() {
+                try {
+                    const response = await fetch(`/progress/${userId}`);
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        completedArticles = data.completed_articles;
+                        updateOverallProgress();
+                        initGrid();
+                    }
+                } catch (error) {
+                    console.error('Error loading progress:', error);
+                }
+            }
+
+            async function saveProgress(articleId) {
+                try {
+                    const response = await fetch('/progress/update', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            article_no: articleId
+                        })
+                    });
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        if (!completedArticles.includes(articleId)) {
+                            completedArticles.push(articleId);
+                        }
+                        updateOverallProgress();
+                        initGrid();
+                    }
+                } catch (error) {
+                    console.error('Error saving progress:', error);
+                }
+            }
+
+            function calculateModuleProgress(moduleId) {
+                let total = 0;
+                let done = 0;
+                contentData.levels.forEach(level => {
+                    const mod = level.modules.find(m => m.id === moduleId);
+                    if (mod) {
+                        total = mod.articles.length;
+                        mod.articles.forEach(art => {
+                            if (completedArticles.includes(art.id)) {
+                                done++;
+                            }
+                        });
+                    }
+                });
+                return total === 0 ? 0 : Math.round((done / total) * 100);
+            }
+
+            function updateOverallProgress() {
+                let totalArticles = 0;
+                let doneArticles = completedArticles.length;
+
+                let stats = {
+                    'Beginner': { total: 0, done: 0 },
+                    'Intermediate': { total: 0, done: 0 },
+                    'Advanced': { total: 0, done: 0 },
+                    'Expert': { total: 0, done: 0 }
+                };
+
+                contentData.levels.forEach(l => {
+                    let levelKey = l.name.split(': ')[1]; // "Beginner", "Intermediate", etc.
+                    l.modules.forEach(m => {
+                        m.articles.forEach(art => {
+                            totalArticles++;
+                            if (stats[levelKey] !== undefined) stats[levelKey].total++;
+                            if (completedArticles.includes(art.id)) {
+                                if (stats[levelKey] !== undefined) stats[levelKey].done++;
+                            }
+                        });
+                    });
+                });
+
+                const percent = totalArticles === 0 ? 0 : Math.round((doneArticles / totalArticles) * 100);
+
+                // Update Main Linear Progress Card
+                document.getElementById('overallPercentageMain').innerText = percent;
+                document.getElementById('completedCountView').innerText = doneArticles;
+                document.getElementById('totalCountView').innerText = totalArticles;
+                document.getElementById('linearProgressBar').style.width = percent + '%';
+
+                // Update Level Breakdown
+                document.getElementById('begProgress').innerText = stats['Beginner'].total > 0 ? Math.round((stats['Beginner'].done / stats['Beginner'].total) * 100) + '%' : '0%';
+                document.getElementById('intProgress').innerText = stats['Intermediate'].total > 0 ? Math.round((stats['Intermediate'].done / stats['Intermediate'].total) * 100) + '%' : '0%';
+                document.getElementById('advProgress').innerText = stats['Advanced'].total > 0 ? Math.round((stats['Advanced'].done / stats['Advanced'].total) * 100) + '%' : '0%';
+                document.getElementById('expProgress').innerText = stats['Expert'].total > 0 ? Math.round((stats['Expert'].done / stats['Expert'].total) * 100) + '%' : '0%';
+            }
+
+            function initGrid() {
+                const grid = document.getElementById('learningGrid');
+                grid.innerHTML = '<div class="modules-container"></div>';
+                const container = grid.querySelector('.modules-container');
+
+                contentData.levels.forEach(level => {
+                    let levelName = level.name.split(': ')[1];
+
+                    // Filter Logic
+                    if (currentFilter !== 'All' && currentFilter !== levelName) return;
+
+                    let html = `
+                    <div class="category-header mt-4">
+                        <i class="bi bi-mortarboard-fill"></i> ${level.name}
+                    </div>
+                `;
+                    container.insertAdjacentHTML('beforeend', html);
+
+                    level.modules.forEach(mod => {
+                        const progress = calculateModuleProgress(mod.id);
+
+                        // Assign theme color based on progress or level
+                        let themeClass = 'theme-blue'; // default
+                        if (progress === 100) themeClass = 'theme-green';
+                        else if (levelName === 'Beginner') themeClass = 'theme-green';
+                        else if (levelName === 'Intermediate') themeClass = 'theme-blue';
+                        else if (levelName === 'Advanced') themeClass = 'theme-yellow';
+                        else if (levelName === 'Expert') themeClass = 'theme-red';
+
+                        // Truncate first article content for description
+                        let firstContent = mod.articles[0].content.replace(/<[^>]*>?/gm, ''); // strip HTML
+                        let descText = firstContent.substring(0, 60) + '...';
+
+                        let modHtml = `
+                        <div class="module-card-new ${themeClass}" onclick="openModule(${mod.id})">
+                            <div class="module-top-meta">
+                                <div class="module-icon-sq">
+                                    <i class="bi ${mod.icon}"></i>
+                                </div>
+                                <div class="module-meta-text">
+                                    <span class="module-subtitle">Module ${mod.id}</span>
+                                    <span class="module-badge-sm">${mod.articles.length} Articles</span>
+                                </div>
+                                <i class="bi bi-chevron-down text-muted"></i>
+                            </div>
+                            
+                            <h3 class="module-title-new">${mod.title}</h3>
+                            <p class="module-desc-new">${descText}</p>
+                            
+                            <div class="module-progress-wrapper">
+                                <div class="module-progress-bar-bg">
+                                    <div class="module-progress-bar-fill" style="width: ${progress}%"></div>
+                                </div>
+                                <span class="module-progress-text">${progress}%</span>
+                            </div>
+                        </div>
+                    `;
+                        container.insertAdjacentHTML('beforeend', modHtml);
+                    });
+                });
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('moduleModal'));
+            let currentArticle = null;
+            let currentModuleId = null;
+            let currentModuleArticles = [];
+            let currentLevelName = '';
+            let currentLevelClass = '';
+
+            function openModule(id) {
+                let module;
+                let levelClass;
+                let levelName;
+
+                contentData.levels.forEach(l => {
+                    const found = l.modules.find(m => m.id === id);
+                    if (found) {
+                        module = found;
+                        levelClass = l.class;
+                        levelName = l.name;
+                        currentModuleId = id;
+                    }
+                });
+
+                document.getElementById('modalTitle').innerText = module.title;
+                const list = document.getElementById('modalArticles');
+                list.innerHTML = '';
+
+                // Store module context for prev/next navigation
+                currentModuleArticles = module.articles;
+                currentLevelName = levelName;
+                currentLevelClass = levelClass;
+
+                module.articles.forEach((art, index) => {
+                    const isDone = completedArticles.includes(art.id);
+                    const div = document.createElement('a');
+                    div.href = "javascript:void(0)";
+                    div.className = `article-link ${isDone ? 'completed' : ''}`;
+                    div.innerHTML = `
+                        <div class="article-link-icon">
+                            ${isDone
+                                ? '<i class="bi bi-check-lg"></i>'
+                                : `<span>${index + 1}</span>`
+                            }
+                        </div>
+                        <div class="article-link-body">
+                            <div class="article-link-title">${art.title}</div>
+                            <div class="article-link-sub">${isDone ? '✓ Completed' : 'Read article'}</div>
+                        </div>
+                        <i class="bi ${isDone ? 'bi-check-circle-fill' : 'bi-arrow-right'} article-link-arrow"></i>
+                    `;
+                    div.onclick = () => {
+                        modal.hide();
+                        currentArticle = art;
+                        showArticle(art.title, art.content, levelName, levelClass, isDone, art.id);
+                    };
+                    list.appendChild(div);
+                });
+
+                modal.show();
+            }
+
+            function showArticle(title, content, level, levelClass, isDone, articleId) {
+                document.getElementById('articleTitle').innerText = title;
+                document.getElementById('articleBody').innerHTML = content.replace(/^<h2>[^<]*<\/h2>/, '');
+                document.getElementById('articleBadge').innerText = level;
+                document.getElementById('articleBadge').className = `level-badge ${levelClass} mb-3 d-inline-block`;
+
+                const btn = document.getElementById('markCompleteBtn');
+                btn.classList.remove('s--processing', 's--completed');
+
+                if (isDone) {
+                    btn.classList.add('s--completed');
+                    btn.onclick = null;
+                } else {
+                    btn.onclick = () => markAsCompleteWithAnimation(articleId);
+                }
+
+                // Update prev/next navigation buttons
+                const arts = currentModuleArticles;
+                const idx = arts.findIndex(a => a.id === articleId);
+                const navBar = document.getElementById('articleNavBar');
+                if (arts.length > 1) {
+                    navBar.style.display = 'flex';
+
+                    const prevBtn = document.getElementById('prevArticleBtn');
+                    const nextBtn = document.getElementById('nextArticleBtn');
+
+                    prevBtn.disabled = (idx <= 0);
+                    nextBtn.disabled = (idx >= arts.length - 1);
+
+                    // Update article title previews inside buttons
+                    document.getElementById('prevArticleTitle').textContent =
+                        idx > 0 ? arts[idx - 1].title : '—';
+                    document.getElementById('nextArticleTitle').textContent =
+                        idx < arts.length - 1 ? arts[idx + 1].title : '—';
+
+                    // Counter pill
+                    document.getElementById('articleNavCounter').textContent =
+                        `${idx + 1} / ${arts.length}`;
+
+                    // Dot indicators (max 7 dots)
+                    const dotsContainer = document.getElementById('navDots');
+                    dotsContainer.innerHTML = '';
+                    const maxDots = Math.min(arts.length, 7);
+                    for (let i = 0; i < maxDots; i++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'nav-dot' + (i === idx ? ' active' : '');
+                        dotsContainer.appendChild(dot);
+                    }
+                } else {
+                    navBar.style.display = 'none';
+                }
+
+                const overlay = document.getElementById('readerOverlay');
+                overlay.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                overlay.scrollTop = 0;
+            }
+
+            function navigateArticle(direction) {
+                const arts = currentModuleArticles;
+                const idx = arts.findIndex(a => a.id === currentArticle.id);
+                const newIdx = idx + direction;
+                if (newIdx < 0 || newIdx >= arts.length) return;
+                const art = arts[newIdx];
+                const isDone = completedArticles.includes(art.id);
+                currentArticle = art;
+                showArticle(art.title, art.content, currentLevelName, currentLevelClass, isDone, art.id);
+            }
+
+            let isAnimating = false;
+            function markAsCompleteWithAnimation(articleId) {
+                if (isAnimating || completedArticles.includes(articleId)) return;
+
+                isAnimating = true;
+                const btn = document.getElementById('markCompleteBtn');
+                btn.classList.add('s--processing');
+
+                // Animation total time is roughly 6.6s based on CSS delays (5.5s + 1.1s)
+                // We'll wait 6 seconds before saving progress and updating UI
+                setTimeout(() => {
+                    saveProgress(articleId);
+                    isAnimating = false;
+                    btn.classList.remove('s--processing');
+                    btn.classList.add('s--completed');
+                    btn.onclick = null;
+                }, 6500);
+            }
+
+            function closeReader() {
+                document.getElementById('readerOverlay').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+
+            window.onload = () => {
+                initGrid();
+                loadCompletedArticles();
+            };
+        </script>
+        <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='logout_animation.js') }}"></script>
+</body>
+
+</html>

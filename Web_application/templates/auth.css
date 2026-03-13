@@ -1,0 +1,337 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+    text-decoration: none;
+    list-style: none;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #020617, #1e1b4b);
+    overflow: hidden;
+}
+
+.back-home {
+    position: fixed;
+    top: 30px;
+    left: 30px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+    background: rgba(139, 92, 246, 0.2);
+    padding: 10px 20px;
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.back-home:hover {
+    color: #c084fc;
+    background: rgba(139, 92, 246, 0.3);
+    transform: translateX(-5px);
+}
+
+.container {
+    position: relative;
+    width: 850px;
+    height: 700px;
+    /* Increased height to fit more fields */
+    background: #fff;
+    margin: 20px;
+    border-radius: 30px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, .4);
+    overflow: hidden;
+}
+
+.container h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.container p {
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+form {
+    width: 100%;
+}
+
+.form-box {
+    position: absolute;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    color: #333;
+    text-align: center;
+    padding: 40px;
+    z-index: 1;
+    transition: .6s ease-in-out 1.2s, visibility 0s 1s;
+}
+
+.container.active .form-box {
+    right: 50%;
+}
+
+.form-box.register {
+    visibility: hidden;
+}
+
+.container.active .form-box.register {
+    visibility: visible;
+}
+
+.input-box {
+    position: relative;
+    margin: 20px 0;
+}
+
+.input-box input {
+    width: 100%;
+    padding: 12px 50px 12px 20px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    outline: none;
+    font-size: 15px;
+    color: #333;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.input-box input:focus {
+    border-color: #8b5cf6;
+    background: #fff;
+}
+
+.input-box input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+/* Make date input text match placeholders when empty */
+.input-box input[type="date"] {
+    color: #94a3b8;
+}
+
+/* Restore normal color when a date is selected */
+.input-box input[type="date"]:valid,
+.input-box input[type="date"]:focus {
+    color: #333;
+}
+
+.input-box i {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #64748b;
+}
+
+.forgot-link {
+    margin: -10px 0 15px;
+}
+
+.forgot-link a {
+    font-size: 14px;
+    color: #64748b;
+    transition: 0.3s;
+}
+
+.forgot-link a:hover {
+    color: #8b5cf6;
+}
+
+.btn {
+    width: 100%;
+    height: 48px;
+    background: #8b5cf6;
+    border-radius: 10px;
+    box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.3);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background: #7c3aed;
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(139, 92, 246, 0.4);
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.social-icons a {
+    display: inline-flex;
+    padding: 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 20px;
+    color: #333;
+    transition: 0.3s;
+}
+
+.social-icons a:hover {
+    background: #f8fafc;
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+    transform: translateY(-3px);
+}
+
+.toggle-box {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.toggle-box::before {
+    content: '';
+    position: absolute;
+    left: -250%;
+    width: 300%;
+    height: 100%;
+    background: linear-gradient(135deg, #8b5cf6, #c084fc);
+    border-radius: 150px;
+    z-index: 2;
+    transition: 1.8s ease-in-out;
+}
+
+.container.active .toggle-box::before {
+    left: 50%;
+}
+
+.toggle-panel {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    transition: .6s ease-in-out;
+}
+
+.toggle-panel.toggle-left {
+    left: 0;
+    transition-delay: 1.2s;
+}
+
+.container.active .toggle-panel.toggle-left {
+    left: -50%;
+    transition-delay: .6s;
+}
+
+.toggle-panel.toggle-right {
+    right: -50%;
+    transition-delay: .6s;
+}
+
+.container.active .toggle-panel.toggle-right {
+    right: 0;
+    transition-delay: 1.2s;
+}
+
+.toggle-panel h1 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.toggle-panel p {
+    margin: 15px 0 25px;
+    opacity: 0.9;
+}
+
+.toggle-panel .btn {
+    width: 160px;
+    height: 46px;
+    background: transparent;
+    border: 2px solid #fff;
+    box-shadow: none;
+}
+
+.toggle-panel .btn:hover {
+    background: #fff;
+    color: #8b5cf6;
+}
+
+@media screen and (max-width: 650px) {
+    .container {
+        height: 100vh;
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .form-box {
+        bottom: 0;
+        width: 100%;
+        height: 75%;
+    }
+
+    .container.active .form-box {
+        right: 0;
+        bottom: 25%;
+    }
+
+    .toggle-box::before {
+        left: 0;
+        top: -270%;
+        width: 100%;
+        height: 300%;
+        border-radius: 20vw;
+    }
+
+    .container.active .toggle-box::before {
+        left: 0;
+        top: 75%;
+    }
+
+    .container.active .toggle-panel.toggle-left {
+        left: 0;
+        top: -25%;
+    }
+
+    .toggle-panel {
+        width: 100%;
+        height: 25%;
+    }
+
+    .toggle-panel.toggle-left {
+        top: 0;
+    }
+
+    .toggle-panel.toggle-right {
+        right: 0;
+        bottom: -25%;
+    }
+
+    .container.active .toggle-panel.toggle-right {
+        bottom: 0;
+    }
+}

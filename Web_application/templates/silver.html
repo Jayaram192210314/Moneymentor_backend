@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silver Rates - Money Mentor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root {
+            --silver-primary: #64748b;
+            --silver-secondary: #94a3b8;
+            --silver-gradient: linear-gradient(135deg, #1e293b, #475569);
+            --bg-light: #f8fafc;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+        }
+
+        .silver-header {
+            background: var(--silver-gradient);
+            padding: 30px 20px;
+            color: white;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 25px;
+            left: 20px;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            font-size: 24px;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .refresh-btn {
+            position: absolute;
+            top: 25px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            transition: 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05) rotate(180deg);
+        }
+
+        .header-content {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .header-content h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header-content p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .content-container {
+            max-width: 1200px;
+            margin: -30px auto 30px;
+            padding: 0 20px;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+
+        .price-card {
+            background: linear-gradient(135deg, #64748b 0%, #94a3b8 50%, #b0bec5 100%);
+            padding: 40px 25px;
+            border-radius: 24px;
+            box-shadow: 0 12px 32px rgba(100, 116, 139, 0.4), 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            border: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .price-card::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 140px; height: 140px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+        .price-card::after {
+            content: '';
+            position: absolute;
+            bottom: -25px; left: -25px;
+            width: 90px; height: 90px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+
+        .price-info {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-circle {
+            width: 64px;
+            height: 64px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: white;
+            backdrop-filter: blur(6px);
+            border: 1.5px solid rgba(255,255,255,0.3);
+        }
+
+        .label-group h3 {
+            font-size: 22px;
+            font-weight: 800;
+            margin: 0;
+            color: white;
+        }
+
+        .label-group p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            margin: 4px 0 0;
+            font-weight: 500;
+        }
+
+        .price-display {
+            text-align: center;
+        }
+
+        .price-value {
+            font-size: 34px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 2px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .unit {
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+            font-weight: 500;
+        }
+
+        .change-pill {
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .change-pill.up {
+            background: #f0fdf4;
+            color: #22c55e;
+        }
+
+        .change-pill.down {
+            background: #fff1f2;
+            color: #ef4444;
+        }
+
+        .chart-section {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            min-height: 480px;
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid #64748b;
+        }
+
+        .chart-header {
+            margin-bottom: 25px;
+        }
+
+        .chart-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .selection-card {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            border: 1.5px dashed #94a3b8;
+            border-radius: 20px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            transition: all 0.35s cubic-bezier(.4,0,.2,1);
+            min-height: 88px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .selection-card::before {
+            content: '';
+            position: absolute;
+            top: -20px; right: -20px;
+            width: 80px; height: 80px;
+            background: rgba(148, 163, 184, 0.12);
+            border-radius: 50%;
+        }
+
+        .selection-card.active {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-style: solid;
+            border-color: #64748b;
+            box-shadow: 0 8px 28px rgba(100, 116, 139, 0.2), inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        .selection-item {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            padding: 0 12px;
+        }
+
+        .selection-item + .selection-item {
+            border-left: 1px solid rgba(100, 116, 139, 0.2);
+        }
+
+        .selection-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .selection-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .chart-container {
+            flex-grow: 1;
+            position: relative;
+        }
+
+        #place-selector {
+            border: none;
+            background: #f1f5f9;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            outline: none;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        @media (max-width: 992px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+            .content-container {
+                margin-top: -20px;
+            }
+            .chart-section {
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="silver-header">
+        <button class="refresh-btn" onclick="updateData()"><i class='bx bx-refresh'></i></button>
+        <div class="header-content">
+            <h1>Silver Rates</h1>
+            <p>Live prices & trends</p>
+        </div>
+    </div>
+
+    <div class="content-container">
+        <div class="d-flex justify-content-center">
+             <select id="place-selector" onchange="updateData()">
+                <option value="chennai">Chennai</option>
+                <option value="mumbai">Mumbai</option>
+                <option value="delhi">Delhi</option>
+                <option value="bangalore">Bangalore</option>
+                <option value="hyderabad">Hyderabad</option>
+            </select>
+        </div>
+
+        <div class="layout-grid">
+            <div class="price-cards">
+                <div class="price-card">
+                    <div class="price-info">
+                        <div class="icon-circle">
+                            <i class='bx bxs-medal'></i>
+                        </div>
+                        <div class="label-group">
+                            <h3>Silver</h3>
+                            <p>999 Fine Silver</p>
+                        </div>
+                    </div>
+                    <div class="price-display">
+                        <div class="price-value" id="priceToday">₹00.00</div>
+                        <div class="unit">per gram</div>
+                        <div id="changeToday" class="change-pill">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h2>Price Trend (10 Days)</h2>
+                </div>
+
+                <!-- Selection Card -->
+                <div class="selection-card" id="silverSelectionCard">
+                    <div class="selection-item">
+                        <div class="selection-label">Selected Date</div>
+                        <div class="selection-value" id="selDate">---</div>
+                    </div>
+                    <div class="selection-item">
+                        <div class="selection-label">Silver Price</div>
+                        <div class="selection-value" id="selPrice">---</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="silverChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let silverChart = null;
+
+        async function updateData() {
+            const place = document.getElementById('place-selector').value;
+            try {
+                const res = await fetch(`/silver?place=${place}`);
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    // Update Prices
+                    document.getElementById('priceToday').innerText = `₹${parseFloat(data.silver_today).toFixed(2)}`;
+
+                    // Update Change
+                    const change = parseFloat(data.today_change);
+                    const pill = document.getElementById('changeToday');
+                    pill.innerHTML = `<i class='bx bx-${change >= 0 ? 'trending-up' : 'trending-down'}'></i> ${change >= 0 ? '+' : ''}${change.toFixed(3)}`;
+                    pill.className = `change-pill ${change >= 0 ? 'up' : 'down'}`;
+
+                    // Update Chart
+                    updateChart(data.table);
+                }
+            } catch (e) {
+                console.error('Error fetching silver data:', e);
+            }
+        }
+
+        function updateChart(tableData) {
+            const labels = tableData.map(item => item.date).reverse();
+            const values = tableData.map(item => item.rate).reverse();
+
+            const ctx = document.getElementById('silverChart').getContext('2d');
+
+            if (silverChart) {
+                silverChart.destroy();
+            }
+
+            silverChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Silver Price (1g)',
+                        data: values,
+                        borderColor: '#64748b',
+                        backgroundColor: 'rgba(100, 116, 139, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointBorderColor: '#64748b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    onHover: (event, chartElement) => {
+                        if (chartElement.length > 0) {
+                            const index = chartElement[0].index;
+                            const date = labels[index];
+                            const val = values[index];
+
+                            const elDate = document.getElementById('selDate');
+                            const elPrice = document.getElementById('selPrice');
+
+                            elDate.innerText = date;
+                            elPrice.innerText = `₹${parseFloat(val).toFixed(2)}`;
+
+                            // Color logic based on previous day change
+                            if (index < labels.length - 1) {
+                                const prevVal = values[index + 1];
+                                const change = val - prevVal;
+                                elPrice.style.color = change >= 0 ? '#22c55e' : '#ef4444';
+                            } else {
+                                elPrice.style.color = 'inherit';
+                            }
+
+                            document.getElementById('silverSelectionCard').classList.add('active');
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: '#f1f5f9' },
+                            ticks: { 
+                                font: { size: 11 },
+                                callback: val => '₹' + val 
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', updateData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Money Mentor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logout_animation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='overview_cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_header.css') }}">
+    <style>
+        :root {
+            --bg-main: #fcf4f7;
+            --bg-surface: #ffffff;
+            --primary: #8b5cf6;
+            --primary-rgb: 139, 92, 246;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px 40px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 60px 20px 20px;
+            }
+        }
+
+        .logo-box-lg {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* Welcome Header */
+        .welcome-header {
+            margin-bottom: 40px;
+        }
+
+        .welcome-header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #0f172a;
+        }
+
+        .welcome-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Top Bar & Profile Button */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: var(--bg-surface);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 50px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .profile-btn:hover {
+            background: #f8fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+            color: var(--primary);
+        }
+
+        .profile-avatar {
+            width: 32px;
+            height: 32px;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+
+
+        /* Shimmer effects for loading */
+        .shimmer {
+            background: #f1f5f9;
+            background-image: linear-gradient(90deg, #f1f5f9 0px, #e2e8f0 40px, #f1f5f9 80px);
+            background-size: 600px;
+            animation: shimmer 2s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -468px 0;
+            }
+
+            100% {
+                background-position: 468px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header d-lg-none">
+        <a href="/dashboard" class="mobile-logo">
+            <div class="logo-box-lg" style="width: 32px; height: 32px; font-size: 1.1rem; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <span>Money Mentor</span>
+        </a>
+        <button class="mobile-toggle" id="sidebarToggle">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a class="navbar-brand d-flex align-items-center fw-bold mb-5" href="/index">
+                <div class="logo-box-lg mx-1 d-flex align-items-center justify-content-center me-2">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                Money Mentor
+            </a>
+            <nav>
+                <a href="/dashboard" class="sidebar-link active" style="--clr: #3b82f6;"><span
+                        class="d-flex align-items-center"><i class="bi bi-grid-1x2 me-2"></i> Overview</span><b
+                        class="effect"></b></a>
+                <a href="/learning_center" class="sidebar-link" style="--clr: #8b5cf6;"><span
+                        class="d-flex align-items-center"><i class="bi bi-book me-2"></i> Learning Path</span><b
+                        class="effect"></b></a>
+                <a href="/tools" class="sidebar-link" style="--clr: #10b981;"><span class="d-flex align-items-center"><i
+                            class="bi bi-calculator me-2"></i> Calculators</span><b class="effect"></b></a>
+                <a href="/goals" class="sidebar-link" style="--clr: #f59e0b;"><span class="d-flex align-items-center"><i
+                            class="bi bi-graph-up me-2"></i> My Goals</span><b class="effect"></b></a>
+                <a href="/daily-insights" class="sidebar-link" style="--clr: #ec4899;"><span
+                        class="d-flex align-items-center"><i class="bi bi-lightbulb me-2"></i> Daily Tips</span><b
+                        class="effect"></b></a>
+                <a href="/finbot" class="sidebar-link" style="--clr: #06b6d4;"><span
+                        class="d-flex align-items-center"><i class="bi bi-robot me-2"></i> FinBot</span><b
+                        class="effect"></b></a>
+                <a href="/profile" class="sidebar-link" style="--clr: #ef4444;"><span
+                        class="d-flex align-items-center"><i class="bi bi-person-circle me-2"></i> Profile</span><b
+                        class="effect"></b></a>
+
+
+                <button class="logoutButton" data-href="{{ url_for('logout') }}">
+                    <svg class="doorway" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <path class="bang"
+                            d="M40.5 43.7L26.6 31.4l-2.5 6.7zM41.9 50.4l-19.5-4-1.4 6.3zM40 scale 1.1x 57.4l-17.7 3.9 3.9 5.7z" />
+                    </svg>
+                    <svg class="figure" viewBox="0 0 100 100">
+                        <circle cx="52.1" cy="32.4" r="6.4" />
+                        <path
+                            d="M50.7 62.8c-1.2 2.5-3.6 5-7.2 4-3.2-.9-4.9-3.5-4-7.8.7-3.4 3.1-13.8 4.1-15.8 1.7-3.4 1.6-4.6 7-3.7 4.3.7 4.6 2.5 4.3 5.4-.4 3.7-2.8 15.1-4.2 17.9z" />
+                        <g class="arm1">
+                            <path
+                                d="M55.5 56.5l-6-9.5c-1-1.5-.6-3.5.9-4.4 1.5-1 3.7-1.1 4.6.4l6.1 10c1 1.5.3 3.5-1.1 4.4-1.5.9-3.5.5-4.5-.9z" />
+                            <path class="wrist1"
+                                d="M69.4 59.9L58.1 58c-1.7-.3-2.9-1.9-2.6-3.7.3-1.7 1.9-2.9 3.7-2.6l11.4 1.9c1.7.3 2.9 1.9 2.6 3.7-.4 1.7-2 2.9-3.8 2.6z" />
+                        </g>
+                        <g class="arm2">
+                            <path
+                                d="M34.2 43.6L45 40.3c1.7-.6 3.5.3 4 2 .6 1.7-.3 4-2 4.5l-10.8 2.8c-1.7.6-3.5-.3-4-2-.6-1.6.3-3.4 2-4z" />
+                            <path class="wrist2"
+                                d="M27.1 56.2L32 45.7c.7-1.6 2.6-2.3 4.2-1.6 1.6.7 2.3 2.6 1.6 4.2L33 58.8c-.7 1.6-2.6 2.3-4.2 1.6-1.7-.7-2.4-2.6-1.7-4.2z" />
+                        </g>
+                        <g class="leg1">
+                            <path
+                                d="M52.1 73.2s-7-5.7-7.9-6.5c-.9-.9-1.2-3.5-.1-4.9 1.1-1.4 3.8-1.9 5.2-.9l7.9 7c1.4 1.1 1.7 3.5.7 4.9-1.1 1.4-4.4 1.5-5.8.4z" />
+                            <path class="calf1"
+                                d="M52.6 84.4l-1-12.8c-.1-1.9 1.5-3.6 3.5-3.7 2-.1 3.7 1.4 3.8 3.4l1 12.8c.1 1.9-1.5 3.6-3.5 3.7-2 0-3.7-1.5-3.8-3.4z" />
+                        </g>
+                        <g class="leg2">
+                            <path
+                                d="M37.8 72.7s1.3-10.2 1.6-11.4 2.4-2.8 4.1-2.6c1.7.2 3.6 2.3 3.4 4l-1.8 11.1c-.2 1.7-1.7 3.3-3.4 3.1-1.8-.2-4.1-2.4-3.9-4.2z" />
+                            <path class="calf2"
+                                d="M29.5 82.3l9.6-10.9c1.3-1.4 3.6-1.5 5.1-.1 1.5 1.4.4 4.9-.9 6.3l-8.5 9.6c-1.3 1.4-3.6 1.5-5.1.1-1.4-1.3-1.5-3.5-.2-5z" />
+                        </g>
+                    </svg>
+                    <svg class="door" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <circle cx="66" cy="50" r="3.7" />
+                    </svg>
+                    <span class="button-text">Logout</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Decorative background elements -->
+            <div style="position:fixed; top:10%; right:5%; width:300px; height:300px; background:rgba(139, 92, 246, 0.05); filter:blur(100px); border-radius:50%; pointer-events:none; z-index:0;"></div>
+            <div style="position:fixed; bottom:10%; left:20%; width:400px; height:400px; background:rgba(16, 185, 129, 0.05); filter:blur(120px); border-radius:50%; pointer-events:none; z-index:0;"></div>
+
+            <div class="dynamic-welcome-header">
+                <div class="floating-icons">
+                    <i class="bi bi-currency-dollar floating-icon icon-1"></i>
+                    <i class="bi bi-graph-up-arrow floating-icon icon-2"></i>
+                    <i class="bi bi-wallet2 floating-icon icon-3"></i>
+                    <i class="bi bi-piggy-bank floating-icon icon-4"></i>
+                </div>
+
+                <div class="header-content">
+                    <h1 id="dynamic-greeting">Welcome back, {{ user_name or 'Friend' }} 👋</h1>
+                    <p id="header-quote">Your financial future starts here.</p>
+                </div>
+
+                <div class="header-meta d-flex align-items-center gap-3">
+                    <div class="text-end">
+                        <div class="date-text" id="live-date">MARCH 11, 2026</div>
+                        <div class="day-text" id="live-day">Wednesday</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overview-section-title title-dashboard">
+                <i class="bi bi-grid-1x2"></i>
+                <div>Smart Finance Panel</div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <!-- Learning Progress Card -->
+                <div class="col-md-4">
+                    <div class="overview-card card-learning">
+                        <div class="card-top-row">
+                            <div class="icon-box">
+                                <i class="bi bi-journal-check"></i>
+                            </div>
+                            <div class="badge-pill">On Track</div>
+                        </div>
+                        <div class="card-content-bottom">
+                            <div class="card-label">Learning Progress</div>
+                            <div class="card-value" id="learning-progress">0%</div>
+                        </div>
+                        <i class="bi bi-mortarboard card-watermark"></i>
+                    </div>
+                </div>
+
+                <!-- Goals Card -->
+                <div class="col-md-4">
+                    <div class="overview-card card-goals">
+                        <div class="card-top-row">
+                            <div class="icon-box">
+                                <i class="bi bi-trophy"></i>
+                            </div>
+                            <div class="badge-pill">Saving</div>
+                        </div>
+                        <div class="card-content-bottom">
+                            <div class="card-label">Total Goals Saved</div>
+                            <div class="card-value" id="goals-total">₹0</div>
+                        </div>
+                        <i class="bi bi-flag card-watermark"></i>
+                    </div>
+                </div>
+
+                <!-- Daily Tip Card -->
+                <div class="col-md-4">
+                    <div class="overview-card card-tip">
+                        <div class="card-top-row">
+                            <div class="icon-box">
+                                <i class="bi bi-lightbulb"></i>
+                            </div>
+                            <div class="badge-pill">Daily Tip</div>
+                        </div>
+                        <div class="card-content-bottom">
+                            <div class="card-label">Wise Words</div>
+                            <div class="card-value" id="daily-tip-text">Loading your tip...</div>
+                        </div>
+                        <i class="bi bi-lightbulb card-watermark"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overview-section-title title-live-rates">
+                <i class="bi bi-activity"></i>
+                <div class="title-live-rates-text">Live Market Rates</div>
+                <div class="live-badge">Live</div>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <!-- Gold Rate Card -->
+                <div class="col-md-6">
+                    <a href="/gold_screen" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="overview-card card-gold">
+                            <div class="card-top-row">
+                                <div class="icon-box">
+                                    <i class="bi bi-coin"></i>
+                                </div>
+                                <div class="card-trend" id="gold-trend">
+                                    <i class="bi bi-caret-up-fill"></i> ₹0.00
+                                </div>
+                            </div>
+                            <div class="card-content-bottom">
+                                <div class="card-label-top">Gold (24K)</div>
+                                <div class="card-label">Price per Gram</div>
+                                <div class="card-value" id="gold-price">₹0,000</div>
+                            </div>
+                            <i class="bi bi-gem card-watermark"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Silver Rate Card -->
+                <div class="col-md-6">
+                    <a href="/silver_screen" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="overview-card card-silver">
+                            <div class="card-top-row">
+                                <div class="icon-box">
+                                    <i class="bi bi-shield-shaded"></i>
+                                </div>
+                                <div class="card-trend" id="silver-trend">
+                                    <i class="bi bi-caret-down-fill"></i> ₹0.00
+                                </div>
+                            </div>
+                            <div class="card-content-bottom">
+                                <div class="card-label-top">Silver</div>
+                                <div class="card-label">Price per Gram</div>
+                                <div class="card-value" id="silver-price">₹00.00</div>
+                            </div>
+                            <i class="bi bi-layers card-watermark"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='logout_animation.js') }}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userId = "{{ user_id }}";
+
+            if (userId && userId !== 'None') {
+                loadLearningProgress(userId);
+                loadGoalsSummary(userId);
+
+            }
+
+            // 1. Fetch Gold Rate
+            fetchGold();
+            // 2. Fetch Silver Rate
+            fetchSilver();
+
+            // 3. Fetch Daily Tip
+            loadDailyTip();
+        });
+
+        async function loadDailyTip() {
+            try {
+                const res = await fetch('/daily-tip');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    document.getElementById('daily-tip-text').innerText = data.daily_tip;
+                }
+            } catch (e) {
+                console.error('Error loading daily tip:', e);
+                document.getElementById('daily-tip-text').innerText = "Stay smart with your money!";
+            }
+        }
+
+        async function loadLearningProgress(userId) {
+            try {
+                const res = await fetch(`/progress/${userId}`);
+                const data = await res.json();
+                if (data.progress_percent !== undefined) {
+                    document.getElementById('learning-progress').innerText = `${data.progress_percent}%`;
+                }
+            } catch (e) { console.error('Error loading progress:', e); }
+        }
+
+        async function loadGoalsSummary(userId) {
+            try {
+                const res = await fetch(`/get-goals?user_id=${userId}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    const totalSaved = data.goals.reduce((acc, goal) => acc + parseFloat(goal.already_saved_amount), 0);
+                    document.getElementById('goals-total').innerText = `₹${totalSaved.toLocaleString()}`;
+                }
+            } catch (e) { console.error('Error loading goals:', e); }
+        }
+
+        // Dynamic Header Logic
+        document.addEventListener('DOMContentLoaded', function () {
+            updateGreeting();
+            updateDateTime();
+
+            // Random financial quotes
+            const quotes = [
+                "Your financial future starts here.",
+                "Small savings today, big wealth tomorrow.",
+                "Invest in yourself, it pays the best interest.",
+                "Financial freedom is a journey, not a destination.",
+                "The best time to start was yesterday. The second best time is now."
+            ];
+            document.getElementById('header-quote').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+        });
+
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            const userName = "{{ user_name or 'Friend' }}";
+            let greeting = "";
+            let emoji = "👋";
+
+            if (hour >= 5 && hour < 12) {
+                greeting = "Good Morning";
+                emoji = "☀️";
+            } else if (hour >= 12 && hour < 17) {
+                greeting = "Good Afternoon";
+                emoji = "🌤️";
+            } else if (hour >= 17 && hour < 21) {
+                greeting = "Good Evening";
+                emoji = "🌆";
+            } else {
+                greeting = "Good Night";
+                emoji = "🌙";
+            }
+
+            document.getElementById('dynamic-greeting').innerHTML = `${greeting}, ${userName} ${emoji}`;
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { month: 'long', day: 'numeric', year: 'numeric' };
+            const dayOptions = { weekday: 'long' };
+
+            document.getElementById('live-date').innerText = now.toLocaleDateString('en-US', options).toUpperCase();
+            document.getElementById('live-day').innerText = now.toLocaleDateString('en-US', dayOptions);
+        }
+
+
+        // --- Existing Dashboard Functions ---
+        async function fetchGold() {
+            try {
+                const res = await fetch('/gold');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    document.getElementById('gold-price').innerText = `₹${parseFloat(data.gold_price_24k_per_gram).toLocaleString()}`;
+                    const trend = document.getElementById('gold-trend');
+                    const change = parseFloat(data.change_24k_today);
+                    trend.innerHTML = `<i class="bi bi-caret-${change >= 0 ? 'up' : 'down'}-fill"></i> ₹${Math.abs(change).toFixed(2)}`;
+                    trend.className = `card-trend ${change >= 0 ? 'text-success' : 'text-danger'}`;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchSilver() {
+            try {
+                const res = await fetch('/silver');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    document.getElementById('silver-price').innerText = `₹${parseFloat(data.silver_today).toFixed(2)}`;
+                    const trend = document.getElementById('silver-trend');
+                    const change = parseFloat(data.today_change);
+                    trend.innerHTML = `<i class="bi bi-caret-${change >= 0 ? 'up' : 'down'}-fill"></i> ₹${Math.abs(change).toFixed(3)}`;
+                    trend.className = `card-trend ${change >= 0 ? 'text-success' : 'text-danger'}`;
+                }
+            } catch (e) { console.error(e); }
+        }
+    </script>
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='logout_animation.js') }}"></script>
+</body>
+
+</html>

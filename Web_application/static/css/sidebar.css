@@ -1,0 +1,236 @@
+/* Sidebar Navigation Styles */
+.sidebar {
+    width: 260px;
+    background: var(--bg-surface);
+    backdrop-filter: blur(15px);
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.dark-mode .sidebar {
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-radius: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-bottom: 20px;
+    transition: 0.2s;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 0.1rem;
+    font-size: 0.85rem;
+    --clr: transparent;
+    background: transparent;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+    letter-spacing: 0.15rem;
+    background: var(--clr);
+    color: var(--clr);
+    animation: box 3s infinite;
+}
+
+.sidebar-link::before {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    background: var(--bg-surface);
+    border-radius: 10px;
+}
+
+.sidebar-link span {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+.sidebar-link b.effect {
+    position: absolute;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+    border-radius: 12px;
+}
+
+.sidebar-link b.effect::before {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    left: 80%;
+    top: -2px;
+    border: 2px solid var(--clr);
+    background: var(--bg-surface);
+    transition: 0.2s;
+}
+
+.sidebar-link:hover b.effect::before,
+.sidebar-link.active b.effect::before {
+    width: 15px;
+    left: 20%;
+    animation: move 3s infinite;
+}
+
+.sidebar-link b.effect::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    left: 20%;
+    bottom: -2px;
+    border: 2px solid var(--clr);
+    background: var(--bg-surface);
+    transition: 0.2s;
+}
+
+.sidebar-link:hover b.effect::after,
+.sidebar-link.active b.effect::after {
+    width: 15px;
+    left: 80%;
+    animation: move 3s infinite;
+}
+
+.sidebar-link span i {
+    font-size: 1.2rem;
+    margin-right: 12px;
+    color: var(--text-muted);
+    transition: 0.2s;
+}
+
+.sidebar-link:hover span i,
+.sidebar-link.active span i {
+    color: var(--clr);
+}
+
+@keyframes move {
+    0% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(5px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+@keyframes box {
+    0% {
+        box-shadow: 0 0 0 var(--clr);
+    }
+    50% {
+        box-shadow: 0 0 20px var(--clr);
+    }
+    100% {
+        box-shadow: 0 0 0 var(--clr);
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: -260px;
+        top: 0;
+        bottom: 0;
+        height: 100vh;
+        z-index: 1050; /* Above bootstrap modals if needed */
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    /* Overlay for when sidebar is open */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1040;
+        backdrop-filter: blur(2px);
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    /* Mobile Header (New cohesive container) */
+    .mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+        background: var(--bg-surface);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .dark-mode .mobile-header {
+        background: #1e293b;
+        border-bottom-color: rgba(255,255,255,0.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .mobile-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--text-main);
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    /* Mobile Toggle Button - Refined */
+    .mobile-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: transparent;
+        color: var(--text-main);
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.1);
+        font-size: 1.2rem;
+        cursor: pointer;
+        z-index: 1031;
+        transition: 0.2s;
+    }
+
+    .dark-mode .mobile-toggle {
+        border-color: rgba(255,255,255,0.1);
+    }
+
+    .mobile-toggle:hover {
+        background: rgba(0,0,0,0.02);
+    }
+
+    .dark-mode .mobile-toggle:hover {
+        background: rgba(255,255,255,0.05);
+    }
+}

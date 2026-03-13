@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Goals - Money Mentor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='logout_animation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
+    <style>
+        :root {
+            --bg-main: #fcf4f7;
+            --bg-surface: #ffffff;
+            --primary: #8b5cf6;
+            --primary-rgb: 139, 92, 246;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
+        body {
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding-top: 60px;
+            }
+        }
+
+        /* Goals Header Gradient */
+        .goals-header-bg {
+            background: linear-gradient(135deg, #ff1e56, #ff9a3c);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 0 0 30px 30px;
+            margin: 0;
+            position: relative;
+        }
+
+        .goal-icon-circle {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .goal-icon-circle i {
+            font-size: 2.5rem;
+            color: #ff1e56;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 60px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card-mini {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .stat-card-mini:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card-mini .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card-mini .value {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        /* Individual Goal Cards */
+        .goal-card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        @media (max-width: 576px) {
+            .goal-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .goal-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        .goal-card:hover {
+            transform: scale(1.02);
+        }
+
+        .goal-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+        }
+
+        .goal-card.on-track::before {
+            background: #ff1e56;
+        }
+
+        .goal-card.attention::before {
+            background: #3b82f6;
+        }
+
+        .goal-card.completed::before {
+            background: var(--success);
+        }
+
+        .circular-progress {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            position: relative;
+        }
+
+        .circular-progress .inner-circle {
+            position: absolute;
+            width: 65px;
+            height: 65px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .circular-progress .percentage {
+            position: relative;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .goal-info {
+            flex: 1;
+        }
+
+        .goal-name {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+        }
+
+        .goal-amount {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .goal-amount span {
+            color: #ff1e56;
+        }
+
+        .goal-deadline {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .goal-actions {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-icons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .text-btn {
+            padding: 7px 18px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            border: 1.5px solid;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(.4,0,.2,1);
+            background: white;
+        }
+
+        .text-btn-edit {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .text-btn-edit:hover {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 14px rgba(59,130,246,0.3);
+            transform: translateY(-1px);
+        }
+
+        .text-btn-delete {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .text-btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 4px 14px rgba(239,68,68,0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-add-savings {
+            background: white;
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 6px 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+
+        .btn-add-savings:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        /* FAB */
+        .fab-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: #ff1e56;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(255, 30, 86, 0.3);
+            border: none;
+            font-size: 2rem;
+            z-index: 1000;
+            transition: 0.3s;
+        }
+
+        .fab-btn:hover {
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* Modals */
+        .modal-content {
+            border-radius: 30px;
+            border: none;
+            overflow: hidden;
+        }
+
+        .modal-header-gradient {
+            background: linear-gradient(135deg, #ff1e56, #ff9a3c);
+            color: white;
+            padding: 30px;
+            border: none;
+            position: relative;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border-radius: 15px;
+            padding: 12px 20px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #ff1e56, #ff9a3c);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Update Savings Styles */
+        .update-savings-header {
+            background: #10b981;
+            color: white;
+            padding: 30px;
+            text-align: left;
+        }
+
+        .tab-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--success);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .quick-amounts {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .quick-btn {
+            flex: 1;
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .quick-btn:hover {
+            background: #f8fafc;
+        }
+
+        .logo-box-lg {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* ── Animated Trash Delete Button ── */
+        .btn-delete-anim {
+            --background: #ef4444;
+            --background-hover: #dc2626;
+            --text: #fff;
+            --shadow: rgba(239,68,68,.25);
+            --paper: #fff;
+            --paper-lines: #ef4444;
+            --trash: #fecaca;
+            --trash-lines: #fca5a5;
+            --check: #fff;
+            --check-background: #22c55e;
+            position: relative;
+            border: none;
+            outline: none;
+            background: var(--btn, var(--background));
+            padding: 7px 18px 7px 14px;
+            border-radius: 99px;
+            min-width: 110px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text);
+            box-shadow: 0 4px 14px var(--shadow);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            transform: scale(var(--scale, 1));
+            transition: transform .3s, box-shadow .3s, background .3s;
+        }
+        .btn-delete-anim span {
+            display: block;
+            font-size: 0.8rem;
+            line-height: 22px;
+            font-weight: 700;
+            opacity: var(--span-opacity, 1);
+            transform: translateX(var(--span-x, 0)) translateZ(0);
+            transition: transform .4s ease var(--span-delay, .2s), opacity .3s ease var(--span-delay, .2s);
+        }
+        .btn-delete-anim .trash {
+            display: block;
+            position: relative;
+            left: -4px;
+            transform: translate(var(--trash-x, 0), var(--trash-y, 1px)) translateZ(0) scale(var(--trash-scale, .64));
+            transition: transform .5s;
+        }
+        .btn-delete-anim .trash:before,
+        .btn-delete-anim .trash:after {
+            content: '';
+            position: absolute;
+            height: 8px;
+            width: 2px;
+            border-radius: 1px;
+            background: var(--icon, var(--trash));
+            bottom: 100%;
+            transform-origin: 50% 6px;
+            transform: translate(var(--x, 3px), 2px) scaleY(var(--sy, .7)) rotate(var(--r, 0deg));
+            transition: transform .4s, background .3s;
+        }
+        .btn-delete-anim .trash:before { left: 1px; }
+        .btn-delete-anim .trash:after  { right: 1px; --x: -3px; }
+        .btn-delete-anim .top {
+            position: absolute;
+            overflow: hidden;
+            left: -4px; right: -4px;
+            bottom: 100%;
+            height: 40px;
+            z-index: 1;
+            transform: translateY(2px);
+        }
+        .btn-delete-anim .top:before,
+        .btn-delete-anim .top:after {
+            content: '';
+            position: absolute;
+            border-radius: 1px;
+            background: var(--icon, var(--trash));
+            width: var(--w, 12px);
+            height: var(--h, 2px);
+            left: var(--l, 8px);
+            bottom: var(--b, 5px);
+            transition: background .3s, transform .4s;
+        }
+        .btn-delete-anim .top:after {
+            --w: 28px; --h: 2px; --l: 0; --b: 0;
+            transform: scaleX(var(--trash-line-scale, 1));
+        }
+        .btn-delete-anim .paper {
+            width: 14px; height: 18px;
+            background: var(--paper);
+            left: 7px; bottom: 0;
+            border-radius: 1px;
+            position: absolute;
+            transform: translateY(-16px);
+            opacity: 0;
+        }
+        .btn-delete-anim .paper:before,
+        .btn-delete-anim .paper:after {
+            content: '';
+            width: var(--w, 10px);
+            height: 2px;
+            border-radius: 1px;
+            position: absolute;
+            left: 2px;
+            top: var(--t, 2px);
+            background: var(--paper-lines);
+            transform: scaleY(.7);
+            box-shadow: 0 9px 0 var(--paper-lines);
+        }
+        .btn-delete-anim .paper:after { --t: 5px; --w: 7px; }
+        .btn-delete-anim .box {
+            width: 20px; height: 25px;
+            border: 2px solid var(--icon, var(--trash));
+            border-radius: 1px 1px 4px 4px;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+            transition: border-color .3s;
+        }
+        .btn-delete-anim .box:before,
+        .btn-delete-anim .box:after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: var(--h, 20px);
+            top: 0;
+            left: var(--l, 50%);
+            background: var(--b, var(--trash-lines));
+        }
+        .btn-delete-anim .box:before {
+            border-radius: 2px;
+            margin-left: -2px;
+            transform: translateX(-3px) scale(.6);
+            box-shadow: 10px 0 0 var(--trash-lines);
+            opacity: var(--trash-lines-opacity, 1);
+            transition: transform .4s, opacity .4s;
+        }
+        .btn-delete-anim .box:after {
+            --h: 16px; --b: var(--paper); --l: 1px;
+            transform: translate(-.5px, -16px) scaleX(.5);
+            box-shadow: 7px 0 0 var(--paper), 14px 0 0 var(--paper);
+        }
+        .btn-delete-anim .check {
+            padding: 4px 3px;
+            border-radius: 50%;
+            background: var(--check-background);
+            position: absolute;
+            left: 2px; top: 24px;
+            opacity: var(--check-opacity, 0);
+            transform: translateY(var(--check-y, 0)) scale(var(--check-scale, .2));
+            transition: transform var(--check-duration, .2s) ease var(--check-delay, 0s),
+                        opacity var(--check-duration-opacity, .2s) ease var(--check-delay, 0s);
+        }
+        .btn-delete-anim .check svg {
+            width: 8px; height: 6px;
+            display: block;
+            fill: none;
+            stroke-width: 1.5;
+            stroke-dasharray: 9px;
+            stroke-dashoffset: var(--check-offset, 9px);
+            stroke-linecap: round; stroke-linejoin: round;
+            stroke: var(--check);
+            transition: stroke-dashoffset .4s ease var(--checkmark-delay, .4s);
+        }
+        /* Fired state */
+        .btn-delete-anim.deleting {
+            --span-opacity: 0; --span-x: 16px; --span-delay: 0s;
+            --trash-x: 40px; --trash-y: 2px; --trash-scale: 1;
+            --trash-lines-opacity: 0; --trash-line-scale: 0;
+            --icon: #fff;
+            --check-offset: 0; --check-opacity: 1; --check-scale: 1;
+            --check-y: 16px; --check-delay: 1.7s; --checkmark-delay: 2.1s;
+            --check-duration: .55s; --check-duration-opacity: .3s;
+            --btn: var(--background-hover);
+            pointer-events: none;
+        }
+        .btn-delete-anim.deleting .trash:before { --sy: 1; --x: 0; --r: 40deg; }
+        .btn-delete-anim.deleting .trash:after  { --sy: 1; --x: 0; --r: -40deg; }
+        .btn-delete-anim.deleting .paper  { animation: goalPaper 1.5s linear forwards .5s; }
+        .btn-delete-anim.deleting .box:after { animation: goalCut 1.5s linear forwards .5s; }
+        .btn-delete-anim:hover { --btn: var(--background-hover); box-shadow: 0 6px 18px var(--shadow); transform: translateY(-1px); }
+        .btn-delete-anim:active { --scale: .94; }
+
+        @keyframes goalPaper {
+            10%, 100% { opacity: 1; }
+            20%  { transform: translateY(-16px); }
+            40%  { transform: translateY(0); }
+            70%, 100% { transform: translateY(24px); }
+        }
+        @keyframes goalCut {
+            0%, 40% { transform: translate(-.5px, -16px) scaleX(.5); }
+            100%     { transform: translate(-.5px, 24px) scaleX(.5); }
+        }
+
+        /* Dark Mode Overrides (Basic) */
+        .dark-mode {
+            --bg-main: #0f172a;
+            --bg-surface: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        .dark-mode .stat-card-mini,
+        .dark-mode .goal-card,
+        .dark-mode .modal-content,
+        .dark-mode .tab-btn.active,
+        .dark-mode .quick-btn,
+        .dark-mode .inner-circle {
+            background: #1e293b;
+            color: #f1f5f9;
+        }
+    </style>
+</head>
+
+<body class="light-mode">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header d-lg-none">
+        <a href="/dashboard" class="mobile-logo">
+            <div class="logo-box-lg" style="width: 32px; height: 32px; font-size: 1.1rem; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <span>Money Mentor</span>
+        </a>
+        <button class="mobile-toggle" id="sidebarToggle">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a class="navbar-brand d-flex align-items-center fw-bold mb-5" href="/index">
+                <div class="logo-box-lg mx-1 d-flex align-items-center justify-content-center me-2">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                Money Mentor
+            </a>
+            <nav>
+                <a href="/dashboard" class="sidebar-link" style="--clr: #3b82f6;"><span class="d-flex align-items-center"><i class="bi bi-grid-1x2 me-2"></i> Overview</span><b class="effect"></b></a>
+                <a href="/learning_center" class="sidebar-link" style="--clr: #8b5cf6;"><span class="d-flex align-items-center"><i class="bi bi-book me-2"></i> Learning Path</span><b class="effect"></b></a>
+                <a href="/tools" class="sidebar-link" style="--clr: #10b981;"><span class="d-flex align-items-center"><i class="bi bi-calculator me-2"></i> Calculators</span><b class="effect"></b></a>
+                <a href="/goals" class="sidebar-link active" style="--clr: #f59e0b;"><span class="d-flex align-items-center"><i class="bi bi-graph-up me-2"></i> My Goals</span><b class="effect"></b></a>
+                <a href="/daily-insights" class="sidebar-link" style="--clr: #ec4899;"><span class="d-flex align-items-center"><i class="bi bi-lightbulb me-2"></i> Daily Tips</span><b class="effect"></b></a>
+                <a href="/finbot" class="sidebar-link" style="--clr: #06b6d4;"><span class="d-flex align-items-center"><i class="bi bi-robot me-2"></i> FinBot</span><b class="effect"></b></a>
+                <a href="/profile" class="sidebar-link" style="--clr: #ef4444;"><span class="d-flex align-items-center"><i class="bi bi-person-circle me-2"></i> Profile</span><b class="effect"></b></a>
+
+                <button class="logoutButton" data-href="{{ url_for('logout') }}">
+                    <svg class="doorway" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <path class="bang"
+                            d="M40.5 43.7L26.6 31.4l-2.5 6.7zM41.9 50.4l-19.5-4-1.4 6.3zM40 57.4l-17.7 3.9 3.9 5.7z" />
+                    </svg>
+                    <svg class="figure" viewBox="0 0 100 100">
+                        <circle cx="52.1" cy="32.4" r="6.4" />
+                        <path
+                            d="M50.7 62.8c-1.2 2.5-3.6 5-7.2 4-3.2-.9-4.9-3.5-4-7.8.7-3.4 3.1-13.8 4.1-15.8 1.7-3.4 1.6-4.6 7-3.7 4.3.7 4.6 2.5 4.3 5.4-.4 3.7-2.8 15.1-4.2 17.9z" />
+                        <g class="arm1">
+                            <path
+                                d="M55.5 56.5l-6-9.5c-1-1.5-.6-3.5.9-4.4 1.5-1 3.7-1.1 4.6.4l6.1 10c1 1.5.3 3.5-1.1 4.4-1.5.9-3.5.5-4.5-.9z" />
+                            <path class="wrist1"
+                                d="M69.4 59.9L58.1 58c-1.7-.3-2.9-1.9-2.6-3.7.3-1.7 1.9-2.9 3.7-2.6l11.4 1.9c1.7.3 2.9 1.9 2.6 3.7-.4 1.7-2 2.9-3.8 2.6z" />
+                        </g>
+                        <g class="arm2">
+                            <path
+                                d="M34.2 43.6L45 40.3c1.7-.6 3.5.3 4 2 .6 1.7-.3 4-2 4.5l-10.8 2.8c-1.7.6-3.5-.3-4-2-.6-1.6.3-3.4 2-4z" />
+                            <path class="wrist2"
+                                d="M27.1 56.2L32 45.7c.7-1.6 2.6-2.3 4.2-1.6 1.6.7 2.3 2.6 1.6 4.2L33 58.8c-.7 1.6-2.6 2.3-4.2 1.6-1.7-.7-2.4-2.6-1.7-4.2z" />
+                        </g>
+                        <g class="leg1">
+                            <path
+                                d="M52.1 73.2s-7-5.7-7.9-6.5c-.9-.9-1.2-3.5-.1-4.9 1.1-1.4 3.8-1.9 5.2-.9l7.9 7c1.4 1.1 1.7 3.5.7 4.9-1.1 1.4-4.4 1.5-5.8.4z" />
+                            <path class="calf1"
+                                d="M52.6 84.4l-1-12.8c-.1-1.9 1.5-3.6 3.5-3.7 2-.1 3.7 1.4 3.8 3.4l1 12.8c.1 1.9-1.5 3.6-3.5 3.7-2 0-3.7-1.5-3.8-3.4z" />
+                        </g>
+                        <g class="leg2">
+                            <path
+                                d="M37.8 72.7s1.3-10.2 1.6-11.4 2.4-2.8 4.1-2.6c1.7.2 3.6 2.3 3.4 4l-1.8 11.1c-.2 1.7-1.7 3.3-3.4 3.1-1.8-.2-4.1-2.4-3.9-4.2z" />
+                            <path class="calf2"
+                                d="M29.5 82.3l9.6-10.9c1.3-1.4 3.6-1.5 5.1-.1 1.5 1.4.4 4.9-.9 6.3l-8.5 9.6c-1.3 1.4-3.6 1.5-5.1.1-1.4-1.3-1.5-3.5-.2-5z" />
+                        </g>
+                    </svg>
+                    <svg class="door" viewBox="0 0 100 100">
+                        <path
+                            d="M93.4 86.3H58.6c-1.9 0-3.4-1.5-3.4-3.4V17.1c0-1.9 1.5-3.4 3.4-3.4h34.8c1.9 0 3.4 1.5 3.4 3.4v65.8c0 1.9-1.5 3.4-3.4 3.4z" />
+                        <circle cx="66" cy="50" r="3.7" />
+                    </svg>
+                    <span class="button-text">Logout</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="goals-header-bg">
+                <div class="d-flex align-items-center gap-3">
+                    <div>
+                        <h2 class="fw-bold mb-0">Goals</h2>
+                        <p class="mb-0 opacity-75">Track your dreams</p>
+                    </div>
+                </div>
+                <div class="goal-icon-circle">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+            </div>
+
+            <div class="px-4 mt-4">
+                <div class="stats-grid">
+                <div class="stat-card-mini">
+                    <div class="label">Total</div>
+                    <div class="value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card-mini">
+                    <div class="label" style="color:#10b981">On Track</div>
+                    <div class="value" id="stat-on-track">0</div>
+                </div>
+                <div class="stat-card-mini">
+                    <div class="label" style="color:#f59e0b">Attention</div>
+                    <div class="value" id="stat-attention">0</div>
+                </div>
+                <div class="stat-card-mini">
+                    <div class="label" style="color:#8b5cf6">Completed</div>
+                    <div class="value" id="stat-completed">0</div>
+                </div>
+            </div>
+
+            <div id="goals-list">
+                <!-- Goals will be loaded here -->
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- FAB for New Goal -->
+    <button class="fab-btn" data-bs-toggle="modal" data-bs-target="#newGoalModal">
+        <i class="bi bi-plus"></i>
+    </button>
+
+    <!-- New Goal Modal -->
+    <div class="modal fade" id="newGoalModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header-gradient">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h4 class="modal-title fw-bold">New Goal</h4>
+                    <p class="mb-0 opacity-75">Set a new financial target</p>
+                    <div class="goal-icon-circle" style="width:60px; height:60px; bottom:-30px;">
+                        <i class="bi bi-bullseye" style="font-size:1.8rem"></i>
+                    </div>
+                </div>
+                <div class="modal-body pt-5">
+                    <form id="newGoalForm">
+                        <div class="mb-3">
+                            <label class="form-label">Goal Name</label>
+                            <input type="text" class="form-control" name="goal_name"
+                                placeholder="e.g. New Car, Wedding Fund" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Target Amount (₹)</label>
+                            <input type="number" class="form-control" name="target_amount" placeholder="e.g. 500000"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Already Saved (₹)</label>
+                            <input type="number" class="form-control" name="already_saved_amount"
+                                placeholder="e.g. 10000 (Optional)" value="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Deadline</label>
+                            <input type="date" class="form-control" name="deadline" required>
+                        </div>
+                        <button type="submit" class="btn btn-save">Create Goal</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Goal Modal -->
+    <div class="modal fade" id="editGoalModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header-gradient">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h4 class="modal-title fw-bold">Edit Goal</h4>
+                    <p class="mb-0 opacity-75">Update your goal details</p>
+                    <div class="goal-icon-circle" style="width:60px; height:60px; bottom:-30px;">
+                        <i class="bi bi-pencil-square" style="font-size:1.8rem"></i>
+                    </div>
+                </div>
+                <div class="modal-body pt-5">
+                    <form id="editGoalForm">
+                        <input type="hidden" name="goal_id">
+                        <div class="mb-3">
+                            <label class="form-label">Goal Name</label>
+                            <input type="text" class="form-control" name="goal_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Target Amount (₹)</label>
+                            <input type="number" class="form-control" name="target_amount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Already Saved (₹)</label>
+                            <input type="number" class="form-control" name="already_saved_amount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Deadline</label>
+                            <input type="date" class="form-control" name="deadline" required>
+                        </div>
+                        <button type="submit" class="btn btn-save">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Savings Modal -->
+    <div class="modal fade" id="updateSavingsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div id="updateSavingsHeader" class="update-savings-header text-center">
+                    <button type="button" class="btn-close btn-close-white float-end" data-bs-dismiss="modal"></button>
+                    <div class="mb-3 mt-4">
+                        <i class="bi bi-wallet2" id="header-icon" style="font-size: 2.8rem;"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0">Update Savings</h4>
+                    <p class="mb-0 opacity-75" id="update-goal-name">Car</p>
+                </div>
+                <div class="modal-body pt-5">
+                    <div class="bg-light p-3 rounded-4 mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small fw-bold">Current Progress</span>
+                            <span class="small fw-bold text-success" id="update-progress-text">21%</span>
+                        </div>
+                        <div class="progress" style="height: 10px; border-radius: 5px;">
+                            <div class="progress-bar bg-success" id="update-progress-bar" style="width: 21%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2 small">
+                            <span id="update-saved-text">₹1.05L of ₹5L</span>
+                            <span class="text-muted" id="update-left-text">₹3.95L left</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mb-4 p-1 bg-light rounded-3">
+                        <button class="tab-btn active w-50" onclick="switchSavingsTab('add')">+ Add</button>
+                        <button class="tab-btn w-50" onclick="switchSavingsTab('withdraw')">- Withdraw</button>
+                    </div>
+
+                    <div id="savingsActionSection">
+                        <h6 class="fw-bold mb-3" id="action-title">Amount to Add</h6>
+                        <div class="position-relative mb-4">
+                            <span
+                                class="position-absolute top-50 start-0 translate-middle-y ms-3 p-1 bg-light rounded-circle"
+                                style="width:30px; height:30px; display:flex; align-items:center; justify-content:center;">₹</span>
+                            <input type="number" id="savingsAmountInput" class="form-control ps-5"
+                                placeholder="Enter amount">
+                        </div>
+
+                        <p class="small text-muted mb-2" id="quick-action-title">Quick Add</p>
+                        <div class="quick-amounts">
+                            <button class="quick-btn" onclick="setQuickAmount(1000)">₹1k</button>
+                            <button class="quick-btn" onclick="setQuickAmount(5000)">₹5k</button>
+                            <button class="quick-btn" onclick="setQuickAmount(10000)">₹10k</button>
+                            <button class="quick-btn" onclick="setQuickAmount(25000)">₹25k</button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-save mt-4" id="btn-update-savings" onclick="handleSavingsUpdate()"
+                        style="background:#10b981">Update Savings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const userId = "{{ user_id }}";
+        let currentGoals = [];
+        let currentlyUpdatingGoalId = null;
+        let currentSavingsMode = 'add'; // 'add' or 'withdraw'
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadGoals();
+
+            // Animated delete button handler (event delegation)
+            document.getElementById('goals-list').addEventListener('click', function(e) {
+                const btn = e.target.closest('.btn-delete-anim');
+                if (!btn || btn.classList.contains('deleting')) return;
+                const goalId = btn.dataset.goalId;
+                btn.classList.add('deleting');
+                setTimeout(() => deleteGoal(goalId), 3200);
+            });
+
+            document.getElementById('newGoalForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    user_id: userId,
+                    goal_name: formData.get('goal_name'),
+                    target_amount: formData.get('target_amount'),
+                    already_saved_amount: formData.get('already_saved_amount'),
+                    deadline: formData.get('deadline')
+                };
+
+                fetch('/add-goal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            bootstrap.Modal.getInstance(document.getElementById('newGoalModal')).hide();
+                            e.target.reset();
+                            loadGoals();
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+            });
+
+            document.getElementById('editGoalForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const goalId = formData.get('goal_id');
+                const data = {
+                    goal_name: formData.get('goal_name'),
+                    target_amount: formData.get('target_amount'),
+                    already_saved_amount: formData.get('already_saved_amount'),
+                    deadline: formData.get('deadline')
+                };
+
+                fetch(`/update-goal/${goalId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            bootstrap.Modal.getInstance(document.getElementById('editGoalModal')).hide();
+                            loadGoals();
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+            });
+        });
+
+        function loadGoals() {
+            fetch(`/get-goals?user_id=${userId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        currentGoals = data.goals;
+                        renderGoals(data.goals);
+                        updateStats(data.goals);
+                    }
+                });
+        }
+
+        function renderGoals(goals) {
+            const container = document.getElementById('goals-list');
+            if (goals.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-clipboard-x fs-1 text-muted"></i>
+                        <p class="mt-3 text-muted">No goals found. Click + to add your first goal!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = goals.map(goal => {
+                const percentage = Math.round((goal.already_saved_amount / goal.target_amount) * 100);
+                let statusClass = 'attention';
+                if (percentage >= 100) statusClass = 'completed';
+                else if (percentage >= 20) statusClass = 'on-track';
+
+                return `
+                    <div class="goal-card ${statusClass}">
+                        <div class="circular-progress" style="background: conic-gradient(${getStatusColor(statusClass)} ${percentage * 3.6}deg, #eef2ff 0deg)">
+                            <div class="inner-circle"></div>
+                            <span class="percentage">${percentage}%</span>
+                        </div>
+                        <div class="goal-info">
+                            <h5 class="goal-name">${goal.goal_name}</h5>
+                            <div class="goal-amount"><span>₹${formatAmount(goal.already_saved_amount)}</span> of ₹${formatAmount(goal.target_amount)}</div>
+                            <div class="goal-deadline"><i class="bi bi-calendar-event"></i> Due ${formatDate(goal.deadline)}</div>
+                        </div>
+                        <div class="goal-actions">
+                            <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+                                <button class="text-btn text-btn-edit" onclick="openEditModal(${goal.id})"><i class="bi bi-pencil me-1"></i>Edit</button>
+                                <button class="btn-add-savings" onclick="openUpdateSavingsModal(${goal.id})"><i class="bi bi-plus"></i> Add</button>
+                            </div>
+                            <button class="btn-delete-anim" data-goal-id="${goal.id}">
+                                <div class="trash">
+                                    <div class="top"><div class="paper"></div></div>
+                                    <div class="box"></div>
+                                    <div class="check"><svg viewBox="0 0 8 6"><polyline points="1 3.4 2.71428571 5 7 1"></polyline></svg></div>
+                                </div>
+                                <span>Delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getStatusColor(status) {
+            if (status === 'completed') return '#10b981';
+            if (status === 'on-track') return '#ff1e56';
+            return '#3b82f6';
+        }
+
+        function formatAmount(amount) {
+            if (amount >= 100000) return (amount / 100000).toFixed(2) + 'L';
+            if (amount >= 1000) return (amount / 1000).toFixed(0) + 'k';
+            return amount;
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function updateStats(goals) {
+            document.getElementById('stat-total').innerText = goals.length;
+
+            let onTrack = 0, attention = 0, completed = 0;
+            goals.forEach(g => {
+                const perc = (g.already_saved_amount / g.target_amount) * 100;
+                if (perc >= 100) completed++;
+                else if (perc >= 20) onTrack++;
+                else attention++;
+            });
+
+            document.getElementById('stat-on-track').innerText = onTrack;
+            document.getElementById('stat-attention').innerText = attention;
+            document.getElementById('stat-completed').innerText = completed;
+        }
+
+        function openEditModal(goalId) {
+            const goal = currentGoals.find(g => g.id === goalId);
+            if (!goal) return;
+
+            const form = document.getElementById('editGoalForm');
+            form.goal_id.value = goal.id;
+            form.goal_name.value = goal.goal_name;
+            form.target_amount.value = goal.target_amount;
+            form.already_saved_amount.value = goal.already_saved_amount;
+
+            // Format date for input
+            const date = new Date(goal.deadline);
+            form.deadline.value = date.toISOString().split('T')[0];
+
+            new bootstrap.Modal(document.getElementById('editGoalModal')).show();
+        }
+
+        function deleteGoal(goalId) {
+            if (confirm('Are you sure you want to delete this goal?')) {
+                fetch(`/delete-goal/${goalId}`, { method: 'DELETE' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') loadGoals();
+                    });
+            }
+        }
+
+        function openUpdateSavingsModal(goalId) {
+            currentlyUpdatingGoalId = goalId;
+            const goal = currentGoals.find(g => g.id === goalId);
+            if (!goal) return;
+
+            document.getElementById('update-goal-name').innerText = goal.goal_name;
+            const percentage = Math.round((goal.already_saved_amount / goal.target_amount) * 100);
+            document.getElementById('update-progress-text').innerText = percentage + '%';
+            document.getElementById('update-progress-bar').style.width = percentage + '%';
+            document.getElementById('update-saved-text').innerText = `₹${formatAmount(goal.already_saved_amount)} of ₹${formatAmount(goal.target_amount)}`;
+            document.getElementById('update-left-text').innerText = `₹${formatAmount(goal.target_amount - goal.already_saved_amount)} left`;
+
+            switchSavingsTab('add');
+            document.getElementById('savingsAmountInput').value = '';
+
+            new bootstrap.Modal(document.getElementById('updateSavingsModal')).show();
+        }
+
+        function switchSavingsTab(mode) {
+            currentSavingsMode = mode;
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs[0].classList.toggle('active', mode === 'add');
+            tabs[1].classList.toggle('active', mode === 'withdraw');
+
+            const header = document.getElementById('updateSavingsHeader');
+            const btn = document.getElementById('btn-update-savings');
+            const icon = header.querySelector('i#header-icon');
+            if (mode === 'add') {
+                header.style.background = '#10b981';
+                btn.style.background = '#10b981';
+                btn.innerText = 'Add Savings';
+                document.getElementById('action-title').innerText = 'Amount to Add';
+                document.getElementById('quick-action-title').innerText = 'Quick Add';
+                icon.className = 'bi bi-wallet2';
+            } else {
+                header.style.background = '#ef4444';
+                btn.style.background = '#ef4444';
+                btn.innerText = 'Withdraw Amount';
+                document.getElementById('action-title').innerText = 'Amount to Withdraw';
+                document.getElementById('quick-action-title').innerText = 'Quick Withdraw';
+                icon.className = 'bi bi-dash-circle';
+            }
+        }
+
+        function setQuickAmount(amount) {
+            document.getElementById('savingsAmountInput').value = amount;
+        }
+
+        function handleSavingsUpdate() {
+            const amount = document.getElementById('savingsAmountInput').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            const url = currentSavingsMode === 'add' ?
+                `/update-extra/${currentlyUpdatingGoalId}` :
+                `/withdraw/${currentlyUpdatingGoalId}`;
+
+            const bodyKey = currentSavingsMode === 'add' ? 'extra_amount' : 'withdraw_amount';
+
+            fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [bodyKey]: amount })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        bootstrap.Modal.getInstance(document.getElementById('updateSavingsModal')).hide();
+                        loadGoals();
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error('Update error:', err);
+                    alert('An error occurred during update');
+                });
+        }
+    </script>
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='logout_animation.js') }}"></script>
+</body>
+
+</html>
