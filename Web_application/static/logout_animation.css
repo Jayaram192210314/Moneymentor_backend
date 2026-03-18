@@ -32,6 +32,7 @@
     width: 160px;
     -webkit-tap-highlight-color: transparent;
     margin: 10px 0;
+    margin-top: auto;
     padding: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
@@ -39,7 +40,8 @@
 
 .logoutButton:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-    color: #ef4444; /* Subtle hint of red on hover */
+    color: #ef4444;
+    /* Subtle hint of red on hover */
 }
 
 .logoutButton::before {
@@ -110,7 +112,8 @@
     position: relative;
     z-index: 10;
     transition: opacity 0.3s;
-    margin-right: 30px; /* Push text away from the right-side icons */
+    margin-right: 30px;
+    /* Push text away from the right-side icons */
 }
 
 .logoutButton.clicked .button-text {

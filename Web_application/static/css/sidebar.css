@@ -18,6 +18,12 @@
     border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
 .sidebar-link {
     position: relative;
     display: flex;
@@ -122,9 +128,11 @@
     0% {
         transform: translateX(0);
     }
+
     50% {
         transform: translateX(5px);
     }
+
     100% {
         transform: translateX(0);
     }
@@ -134,9 +142,11 @@
     0% {
         box-shadow: 0 0 0 var(--clr);
     }
+
     50% {
         box-shadow: 0 0 20px var(--clr);
     }
+
     100% {
         box-shadow: 0 0 0 var(--clr);
     }
@@ -150,9 +160,10 @@
         top: 0;
         bottom: 0;
         height: 100vh;
-        z-index: 1050; /* Above bootstrap modals if needed */
+        z-index: 1050;
+        /* Above bootstrap modals if needed */
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
     }
 
     .sidebar.active {
@@ -164,7 +175,7 @@
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0, 0, 0, 0.5);
         z-index: 1040;
         backdrop-filter: blur(2px);
     }
@@ -185,14 +196,14 @@
         left: 0;
         right: 0;
         z-index: 1030;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        border-bottom: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     .dark-mode .mobile-header {
         background: #1e293b;
-        border-bottom-color: rgba(255,255,255,0.05);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        border-bottom-color: rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .mobile-logo {
@@ -215,7 +226,7 @@
         background: transparent;
         color: var(--text-main);
         border-radius: 10px;
-        border: 1px solid rgba(0,0,0,0.1);
+        border: 1px solid rgba(0, 0, 0, 0.1);
         font-size: 1.2rem;
         cursor: pointer;
         z-index: 1031;
@@ -223,14 +234,14 @@
     }
 
     .dark-mode .mobile-toggle {
-        border-color: rgba(255,255,255,0.1);
+        border-color: rgba(255, 255, 255, 0.1);
     }
 
     .mobile-toggle:hover {
-        background: rgba(0,0,0,0.02);
+        background: rgba(0, 0, 0, 0.02);
     }
 
     .dark-mode .mobile-toggle:hover {
-        background: rgba(255,255,255,0.05);
+        background: rgba(255, 255, 255, 0.05);
     }
 }

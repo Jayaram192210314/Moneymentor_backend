@@ -12,8 +12,20 @@
     border-radius: 50px;
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     gap: 12px;
+}
+
+.section-header-accent {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    border-left: 4px solid #8b5cf6;
+    padding-left: 15px;
+    line-height: 1.2;
 }
 
 .overview-section-title::before {
@@ -44,6 +56,16 @@
     background-color: #f59e0b;
     color: #f59e0b;
 }
+
+/* New Dashboard Card Headings */
+.title-progress { color: #4338ca; }
+.title-progress::before { background-color: #6366f1; color: #6366f1; }
+
+.title-goals-summary { color: #be123c; }
+.title-goals-summary::before { background-color: #f43f5e; color: #f43f5e; }
+
+.title-insights { color: #ff1e56; }
+.title-insights::before { background-color: #ff8a5c; color: #ff8a5c; }
 
 .title-live-rates-text {
     display: flex;
@@ -84,13 +106,12 @@
 
 /* Base Overview Card */
 .overview-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 28px;
-    padding: 28px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255,255,255,0.6);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: #ffffff;
+    border-radius: 32px;
+    padding: 32px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-top: 4px solid transparent;
     position: relative;
     overflow: hidden;
     height: 100%;
@@ -136,24 +157,21 @@
 }
 
 .icon-box {
-    width: 54px;
-    height: 54px;
-    border-radius: 18px;
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.6rem;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    font-size: 1.8rem;
+    transition: transform 0.3s ease;
 }
 
 .badge-pill {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.75rem;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    backdrop-filter: blur(4px);
 }
 
 .card-content-bottom {
@@ -163,30 +181,29 @@
 }
 
 .card-content-bottom .card-label {
-    font-size: 0.9rem;
-    color: rgba(0, 0, 0, 0.5);
-    font-weight: 600;
-    margin-bottom: 6px;
-    letter-spacing: 0.3px;
+    font-size: 1.2rem;
+    color: #64748b;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
 .card-content-bottom .card-value {
-    font-size: 2.4rem;
-    font-weight: 900;
+    font-size: 2.8rem;
+    font-weight: 800;
     color: #1e293b;
-    line-height: 1;
-    letter-spacing: -0.5px;
+    line-height: 1.1;
 }
 
 .card-watermark {
     position: absolute;
-    bottom: -10px;
-    right: -10px;
-    font-size: 8rem;
-    opacity: 0.08;
+    bottom: -20px;
+    right: -20px;
+    font-size: 10rem;
+    opacity: 0.04;
     z-index: 0;
-    transform: rotate(-15deg);
+    transform: rotate(-10deg);
     transition: all 0.5s ease;
+    pointer-events: none;
 }
 
 .overview-card:hover .card-watermark {
@@ -194,43 +211,43 @@
     opacity: 0.12;
 }
 
-/* Specific Card Themes based on screenshot */
-/* Specific Card Themes */
+/* Learning Card Theme */
 .card-learning {
-    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-    border-color: rgba(99, 102, 241, 0.2);
+    border-top-color: #4f46e5;
 }
 
 .card-learning .icon-box {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    color: #ffffff;
+    background: #eef2ff;
+    color: #4f46e5;
 }
 
 .card-learning .badge-pill {
-    background-color: rgba(99, 102, 241, 0.1);
-    color: #4f46e5;
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    background-color: #fdf2f8;
+    color: #db2777;
 }
 
-.card-learning .card-value { color: #312e81; }
+.card-learning .card-watermark {
+    color: #4f46e5;
+}
 
+/* Goals Card Theme */
 .card-goals {
-    background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
-    border-color: rgba(244, 63, 94, 0.2);
+    border-top-color: #f59e0b;
 }
 
 .card-goals .icon-box {
-    background: linear-gradient(135deg, #f43f5e, #e11d48);
-    color: #ffffff;
+    background: #fffbeb;
+    color: #d97706;
 }
 
 .card-goals .badge-pill {
-    background-color: rgba(244, 63, 94, 0.1);
-    color: #be123c;
-    border: 1px solid rgba(244, 63, 94, 0.2);
+    background-color: #ecfdf5;
+    color: #059669;
 }
 
-.card-goals .card-value { color: #881337; }
+.card-goals .card-watermark {
+    color: #f59e0b;
+}
 
 .card-gold {
     background: linear-gradient(135deg, #fffcf0 0%, #fff9db 100%);
@@ -328,9 +345,9 @@
 
 .card-tip .card-value { 
     color: #064e3b;
-    font-size: 1.1rem !important;
-    font-weight: 600;
-    line-height: 1.4;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     line-clamp: 3;

@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='overview_cards.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sidebar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
     <style>
         :root {
             --bg-main: #fcf4f7;
@@ -95,34 +96,36 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 8px 16px;
-            background: var(--bg-surface);
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 50px;
-            color: var(--text-main);
+            color: white;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.95rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .profile-btn:hover {
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.25);
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
-            color: var(--primary);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            color: white;
         }
 
         .profile-avatar {
             width: 32px;
             height: 32px;
-            background: rgba(139, 92, 246, 0.1);
-            color: var(--primary);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
 
@@ -145,18 +148,155 @@
                 background-position: 468px 0;
             }
         }
+
+        .card-tip {
+            background: linear-gradient(135deg, #ff8a5c 0%, #ff1e56 100%) !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        .card-tip .icon-box {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+        }
+
+        .card-tip .badge-pill {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .card-tip .card-label {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .card-tip .card-value {
+            color: white !important;
+        }
+
+        .goal-mini-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 15px;
+        }
+
+        .goal-mini-item {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #ff1e56;
+            transition: transform 0.3s ease;
+        }
+
+        .goal-mini-item:nth-child(even) {
+            border-left-color: #3b82f6;
+        }
+
+        .goal-mini-item:hover {
+            transform: translateY(-4px);
+        }
+
+        .progress-circle-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+
+        .progress-circle {
+            transform: rotate(-90deg);
+        }
+
+        .progress-circle-bg {
+            fill: none;
+            stroke: #f1f5f9;
+            stroke-width: 6;
+        }
+
+        .progress-circle-val {
+            fill: none;
+            stroke: #ff1e56;
+            stroke-width: 6;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease-out;
+        }
+
+        .goal-mini-item:nth-child(even) .progress-circle-val {
+            stroke: #3b82f6;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .goal-info {
+            flex: 1;
+        }
+
+        .goal-mini-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .goal-mini-amounts {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .goal-mini-saved {
+            color: #f59e0b;
+            font-weight: 700;
+        }
+
+        .goal-mini-item:nth-child(even) .goal-mini-saved {
+            color: #3b82f6;
+        }
+
+        .goal-mini-date {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .title-goals-accent {
+            border-left: 4px solid #ff1e56;
+            padding-left: 15px;
+            font-weight: 800;
+            color: #f59e0b;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
     </style>
 </head>
 
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    
+
     <!-- Mobile Header -->
     <div class="mobile-header d-lg-none">
-        <a href="/dashboard" class="mobile-logo">
-            <div class="logo-box-lg" style="width: 32px; height: 32px; font-size: 1.1rem; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                <i class="bi bi-wallet2"></i>
-            </div>
+        <a href="/dashboard" class="mobile-logo d-flex align-items-center">
+            <img src="{{ url_for('static', filename='Logo.jpg') }}" alt="Money Mentor" class="navbar-logo me-2"
+                style="height: 40px;">
             <span>Money Mentor</span>
         </a>
         <button class="mobile-toggle" id="sidebarToggle">
@@ -168,31 +308,25 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <a class="navbar-brand d-flex align-items-center fw-bold mb-5" href="/index">
-                <div class="logo-box-lg mx-1 d-flex align-items-center justify-content-center me-2">
-                    <i class="bi bi-wallet2"></i>
-                </div>
+                <img src="{{ url_for('static', filename='Logo.jpg') }}" alt="Money Mentor Logo"
+                    class="navbar-logo me-2">
                 Money Mentor
             </a>
             <nav>
-                <a href="/dashboard" class="sidebar-link active" style="--clr: #3b82f6;"><span
-                        class="d-flex align-items-center"><i class="bi bi-grid-1x2 me-2"></i> Overview</span><b
+                <a href="/dashboard" class="sidebar-link active" style="--clr: #ff9800;"><span
+                        class="d-flex align-items-center"><i class="bi bi-grid-1x2 me-2"></i> Home</span><b
                         class="effect"></b></a>
                 <a href="/learning_center" class="sidebar-link" style="--clr: #8b5cf6;"><span
-                        class="d-flex align-items-center"><i class="bi bi-book me-2"></i> Learning Path</span><b
+                        class="d-flex align-items-center"><i class="bi bi-book me-2"></i> Learn</span><b
                         class="effect"></b></a>
-                <a href="/tools" class="sidebar-link" style="--clr: #10b981;"><span class="d-flex align-items-center"><i
-                            class="bi bi-calculator me-2"></i> Calculators</span><b class="effect"></b></a>
-                <a href="/goals" class="sidebar-link" style="--clr: #f59e0b;"><span class="d-flex align-items-center"><i
-                            class="bi bi-graph-up me-2"></i> My Goals</span><b class="effect"></b></a>
-                <a href="/daily-insights" class="sidebar-link" style="--clr: #ec4899;"><span
-                        class="d-flex align-items-center"><i class="bi bi-lightbulb me-2"></i> Daily Tips</span><b
+                <a href="/finbot" class="sidebar-link" style="--clr: #1abc9c;"><span
+                        class="d-flex align-items-center"><i class="bi bi-robot me-2"></i> Chat</span><b
                         class="effect"></b></a>
-                <a href="/finbot" class="sidebar-link" style="--clr: #06b6d4;"><span
-                        class="d-flex align-items-center"><i class="bi bi-robot me-2"></i> FinBot</span><b
-                        class="effect"></b></a>
-                <a href="/profile" class="sidebar-link" style="--clr: #ef4444;"><span
-                        class="d-flex align-items-center"><i class="bi bi-person-circle me-2"></i> Profile</span><b
-                        class="effect"></b></a>
+                <a href="/goals" class="sidebar-link" style="--clr: #ff1e56;"><span class="d-flex align-items-center"><i
+                            class="bi bi-graph-up me-2"></i> Goals</span><b class="effect"></b></a>
+                <a href="/tools" class="sidebar-link" style="--clr: #3b82f6;"><span class="d-flex align-items-center"><i
+                            class="bi bi-calculator me-2"></i> Tools</span><b class="effect"></b></a>
+
 
 
                 <button class="logoutButton" data-href="{{ url_for('logout') }}">
@@ -244,8 +378,12 @@
         <!-- Main Content -->
         <main class="main-content">
             <!-- Decorative background elements -->
-            <div style="position:fixed; top:10%; right:5%; width:300px; height:300px; background:rgba(139, 92, 246, 0.05); filter:blur(100px); border-radius:50%; pointer-events:none; z-index:0;"></div>
-            <div style="position:fixed; bottom:10%; left:20%; width:400px; height:400px; background:rgba(16, 185, 129, 0.05); filter:blur(120px); border-radius:50%; pointer-events:none; z-index:0;"></div>
+            <div
+                style="position:fixed; top:10%; right:5%; width:300px; height:300px; background:rgba(139, 92, 246, 0.05); filter:blur(100px); border-radius:50%; pointer-events:none; z-index:0;">
+            </div>
+            <div
+                style="position:fixed; bottom:10%; left:20%; width:400px; height:400px; background:rgba(16, 185, 129, 0.05); filter:blur(120px); border-radius:50%; pointer-events:none; z-index:0;">
+            </div>
 
             <div class="dynamic-welcome-header">
                 <div class="floating-icons">
@@ -260,17 +398,27 @@
                     <p id="header-quote">Your financial future starts here.</p>
                 </div>
 
-                <div class="header-meta d-flex align-items-center gap-3">
-                    <div class="text-end">
-                        <div class="date-text" id="live-date">MARCH 11, 2026</div>
-                        <div class="day-text" id="live-day">Wednesday</div>
+                <a href="/profile" class="profile-btn d-none d-lg-flex">
+                    <div class="profile-avatar">
+                        <i class="bi bi-person-circle"></i>
                     </div>
-                </div>
+                    <span>{{ user_name or 'Profile' }}</span>
+                </a>
             </div>
 
-            <div class="overview-section-title title-dashboard">
-                <i class="bi bi-grid-1x2"></i>
-                <div>Smart Finance Panel</div>
+            <div class="row align-items-center mb-3">
+                <div class="col-lg-8 col-md-6">
+                    <div class="section-header-accent title-dashboard mb-0">
+                        <i class="bi bi-grid-1x2 me-2"></i>
+                        <div>Dashboard</div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="section-header-accent title-insights mb-0">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <div>Daily Insights</div>
+                    </div>
+                </div>
             </div>
 
             <div class="row g-4 mb-4">
@@ -279,9 +427,9 @@
                     <div class="overview-card card-learning">
                         <div class="card-top-row">
                             <div class="icon-box">
-                                <i class="bi bi-journal-check"></i>
+                                <i class="bi bi-book"></i>
                             </div>
-                            <div class="badge-pill">On Track</div>
+                            <div class="badge-pill" id="learning-modules-badge">16 modules</div>
                         </div>
                         <div class="card-content-bottom">
                             <div class="card-label">Learning Progress</div>
@@ -298,11 +446,11 @@
                             <div class="icon-box">
                                 <i class="bi bi-trophy"></i>
                             </div>
-                            <div class="badge-pill">Saving</div>
+                            <div class="badge-pill" id="goals-track-badge">0 on track</div>
                         </div>
                         <div class="card-content-bottom">
-                            <div class="card-label">Total Goals Saved</div>
-                            <div class="card-value" id="goals-total">₹0</div>
+                            <div class="card-label">Active Goals</div>
+                            <div class="card-value" id="goals-count">0 Goals</div>
                         </div>
                         <i class="bi bi-flag card-watermark"></i>
                     </div>
@@ -310,31 +458,41 @@
 
                 <!-- Daily Tip Card -->
                 <div class="col-md-4">
-                    <div class="overview-card card-tip">
-                        <div class="card-top-row">
-                            <div class="icon-box">
-                                <i class="bi bi-lightbulb"></i>
+
+                    <a href="/daily-insights" style="text-decoration: none; color: inherit; display: block;">
+                        <div class="overview-card card-tip">
+                            <div class="card-top-row">
+                                <div class="icon-box">
+                                    <i class="bi bi-lightbulb"></i>
+                                </div>
+                                <div class="badge-pill">Daily Tip</div>
                             </div>
-                            <div class="badge-pill">Daily Tip</div>
+                            <div class="card-content-bottom">
+                                <div class="card-label">Smart Tip</div>
+                                <div class="card-value" id="daily-tip-text">Loading your tip...</div>
+                            </div>
+                            <i class="bi bi-lightbulb card-watermark" style="color: white; opacity: 0.15;"></i>
                         </div>
-                        <div class="card-content-bottom">
-                            <div class="card-label">Wise Words</div>
-                            <div class="card-value" id="daily-tip-text">Loading your tip...</div>
-                        </div>
-                        <i class="bi bi-lightbulb card-watermark"></i>
-                    </div>
+                    </a>
                 </div>
             </div>
 
-            <div class="overview-section-title title-live-rates">
-                <i class="bi bi-activity"></i>
-                <div class="title-live-rates-text">Live Market Rates</div>
-                <div class="live-badge">Live</div>
+            <div class="row align-items-end" style="margin-top: 40px; margin-bottom: 25px !important;">
+                <div class="col-lg-8 col-md-6">
+                    <div class="section-header-accent title-live-rates mb-0">
+                        <i class="bi bi-activity me-2"></i>
+                        <div class="title-live-rates-text">Live Market Rates</div>
+                        <div class="live-badge">Live</div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="title-goals-accent mb-0">Your Goals</div>
+                </div>
             </div>
 
             <div class="row g-4 mb-5">
                 <!-- Gold Rate Card -->
-                <div class="col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <a href="/gold_screen" style="text-decoration: none; color: inherit; display: block;">
                         <div class="overview-card card-gold">
                             <div class="card-top-row">
@@ -356,7 +514,7 @@
                 </div>
 
                 <!-- Silver Rate Card -->
-                <div class="col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <a href="/silver_screen" style="text-decoration: none; color: inherit; display: block;">
                         <div class="overview-card card-silver">
                             <div class="card-top-row">
@@ -376,6 +534,16 @@
                         </div>
                     </a>
                 </div>
+
+                <!-- Goals on Track Card -->
+                <div class="col-lg-4 col-md-12">
+                    <div id="on-track-goals-list" class="goal-mini-list">
+                        <div class="text-center py-5 opacity-50">
+                            <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
+                            <br><small>Analyzing your progress...</small>
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
@@ -393,7 +561,7 @@
             if (userId && userId !== 'None') {
                 loadLearningProgress(userId);
                 loadGoalsSummary(userId);
-
+                loadOnTrackGoals(userId);
             }
 
             // 1. Fetch Gold Rate
@@ -424,6 +592,7 @@
                 const data = await res.json();
                 if (data.progress_percent !== undefined) {
                     document.getElementById('learning-progress').innerText = `${data.progress_percent}%`;
+                    document.getElementById('learning-modules-badge').innerText = `16 modules`;
                 }
             } catch (e) { console.error('Error loading progress:', e); }
         }
@@ -433,16 +602,81 @@
                 const res = await fetch(`/get-goals?user_id=${userId}`);
                 const data = await res.json();
                 if (data.status === 'success') {
-                    const totalSaved = data.goals.reduce((acc, goal) => acc + parseFloat(goal.already_saved_amount), 0);
-                    document.getElementById('goals-total').innerText = `₹${totalSaved.toLocaleString()}`;
+                    const goalsCount = data.goals.length;
+                    const onTrackCount = data.goals.filter(g => {
+                        const target = parseFloat(g.target_amount);
+                        const saved = parseFloat(g.already_saved_amount);
+                        return target > 0 && (saved / target) >= 0.5;
+                    }).length;
+
+                    document.getElementById('goals-count').innerText = `${goalsCount} Goal${goalsCount !== 1 ? 's' : ''}`;
+                    document.getElementById('goals-track-badge').innerText = `↗ ${onTrackCount} on track`;
                 }
             } catch (e) { console.error('Error loading goals:', e); }
+        }
+
+        async function loadOnTrackGoals(userId) {
+            try {
+                const res = await fetch(`/get-goals?user_id=${userId}`);
+                const data = await res.json();
+                const container = document.getElementById('on-track-goals-list');
+
+                if (data.status === 'success' && data.goals.length > 0) {
+                    const onTrackGoals = data.goals
+                        .map(g => {
+                            const target = parseFloat(g.target_amount);
+                            const saved = parseFloat(g.already_saved_amount);
+                            const percent = target > 0 ? Math.round((saved / target) * 100) : 0;
+                            // Format date
+                            const date = new Date(g.deadline);
+                            const formattedDate = date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+                            return { ...g, percent, formattedDate };
+                        })
+                        .filter(g => g.percent >= 20 && g.percent < 100)
+                        .sort((a, b) => b.percent - a.percent)
+                        .slice(0, 2);
+
+                    if (onTrackGoals.length > 0) {
+                        container.innerHTML = onTrackGoals.map(g => {
+                            const circumference = 2 * Math.PI * 25;
+                            const offset = circumference - (g.percent / 100) * circumference;
+                            return `
+                            <div class="goal-mini-item">
+                                <div class="progress-circle-container">
+                                    <svg class="progress-circle" width="60" height="60">
+                                        <circle class="progress-circle-bg" cx="30" cy="30" r="25"></circle>
+                                        <circle class="progress-circle-val" cx="30" cy="30" r="25" 
+                                            style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${offset};"></circle>
+                                    </svg>
+                                    <div class="progress-text">${g.percent}%</div>
+                                </div>
+                                <div class="goal-info">
+                                    <span class="goal-mini-name">${g.goal_name}</span>
+                                    <div class="goal-mini-amounts">
+                                        <span class="goal-mini-saved">₹${g.already_saved_amount}</span> 
+                                        <span style="opacity: 0.6">of ₹${g.target_amount}</span>
+                                    </div>
+                                    <div class="goal-mini-date">
+                                        <i class="bi bi-calendar3"></i> ${g.formattedDate}
+                                    </div>
+                                </div>
+                            </div>
+                        `}).join('');
+                    } else {
+                        container.innerHTML = '<div class="text-center py-4 bg-white rounded-4 shadow-sm opacity-50"><small>Add some goals to see progress!</small></div>';
+                    }
+                } else {
+                    container.innerHTML = '<div class="text-center py-4 bg-white rounded-4 shadow-sm opacity-50"><small>No goals found.</small></div>';
+                }
+            } catch (e) {
+                console.error('Error loading on-track goals:', e);
+                container.innerHTML = '<div class="text-center py-4 bg-white rounded-4 shadow-sm text-danger small">Failed to load goals.</div>';
+            }
         }
 
         // Dynamic Header Logic
         document.addEventListener('DOMContentLoaded', function () {
             updateGreeting();
-            updateDateTime();
 
             // Random financial quotes
             const quotes = [
@@ -478,14 +712,7 @@
             document.getElementById('dynamic-greeting').innerHTML = `${greeting}, ${userName} ${emoji}`;
         }
 
-        function updateDateTime() {
-            const now = new Date();
-            const options = { month: 'long', day: 'numeric', year: 'numeric' };
-            const dayOptions = { weekday: 'long' };
 
-            document.getElementById('live-date').innerText = now.toLocaleDateString('en-US', options).toUpperCase();
-            document.getElementById('live-day').innerText = now.toLocaleDateString('en-US', dayOptions);
-        }
 
 
         // --- Existing Dashboard Functions ---
@@ -537,7 +764,20 @@
             });
         }
     </script>
+    <a href="/finbot" class="chatbot-float-btn">
+        <div class="coin-inner">
+            <div class="coin-front">
+                <i class="bi bi-coin"></i>
+            </div>
+            <div class="coin-back">
+                <i class="bi bi-currency-rupee"></i>
+            </div>
+        </div>
+        <span class="chatbot-tooltip">Chat with FinBot</span>
+    </a>
+
     <script src="{{ url_for('static', filename='logout_animation.js') }}"></script>
+    <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
 </body>
 
 </html>

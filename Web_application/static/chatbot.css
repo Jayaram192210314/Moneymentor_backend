@@ -1,0 +1,134 @@
+/* Realistic 3D Spinning Coin Chatbot Button */
+.chatbot-float-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 70px;
+    height: 70px;
+    z-index: 9999;
+    perspective: 1000px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.coin-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: coin-spin 4s infinite linear;
+}
+
+.chatbot-float-btn:hover .coin-inner {
+    animation-play-state: paused;
+    transform: scale(1.1);
+}
+
+.coin-front, .coin-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 30% 30%, #ffd700, #b8860b 70%, #8b6b01 90%);
+    border: 4px solid #d4af37;
+    box-shadow: 
+        inset 0 0 10px rgba(0,0,0,0.2),
+        inset 2px 2px 5px rgba(255,255,255,0.5),
+        0 10px 25px rgba(0,0,0,0.3);
+}
+
+.coin-front i, .coin-back i {
+    font-size: 34px;
+    color: #ffd700;
+    text-shadow: 
+        1px 1px 0px #8b6b01,
+        -1px -1px 0px #fffef0,
+        0 4px 8px rgba(0,0,0,0.3);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.coin-back {
+    transform: rotateY(180deg);
+    background: radial-gradient(circle at 30% 30%, #ffcc00, #a67c00 70%, #735600 90%);
+}
+
+/* Tooltip style */
+.chatbot-tooltip {
+    position: absolute;
+    right: 85px;
+    top: 50%;
+    transform: translateY(-50%) translateX(10px);
+    background: #fff;
+    padding: 10px 18px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.chatbot-float-btn:hover .chatbot-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
+}
+
+/* Animations */
+@keyframes coin-spin {
+    from { transform: rotateY(0deg); }
+    to { transform: rotateY(360deg); }
+}
+
+/* Glossy highlight that shines across the coin */
+.coin-inner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0) 45%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 55%,
+        transparent 100%
+    );
+    transform: rotate(-45deg);
+    animation: coin-shine 4s infinite linear;
+    z-index: 10;
+    pointer-events: none;
+    backface-visibility: hidden;
+}
+
+@keyframes coin-shine {
+    0% { transform: translateY(-100%) rotate(-45deg); }
+    100% { transform: translateY(100%) rotate(-45deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chatbot-float-btn {
+        width: 60px;
+        height: 60px;
+        bottom: 20px;
+        right: 20px;
+    }
+    .coin-front i, .coin-back i {
+        font-size: 28px;
+    }
+    .chatbot-tooltip {
+        display: none;
+    }
+}
