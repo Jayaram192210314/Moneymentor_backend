@@ -7,10 +7,11 @@ from io import BytesIO
 from flask import Flask, render_template, request, jsonify, session, send_file, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 import cloudscraper
-import mysql.connector
+import pymysql
+import pymysql.cursors
 from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
-from mysql.connector import Error
+from pymysql import Error
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import numpy as np
@@ -27,17 +28,17 @@ app.secret_key = "supersecretkey"  # required for session
 # -----------------------------
 def get_db_connection():
     try:
-        conn = mysql.connector.connect(
+        conn = pymysql.connect(
             host="localhost",
             user="root",
-            password="",   # default XAMPP password is empty
+            password="Simats@123",
             database="elearning_db",
-            auth_plugin='mysql_native_password', # Fallback for some environments
+            cursorclass=pymysql.cursors.DictCursor,
             connect_timeout=10
         )
 
-        if conn.is_connected():
-            print("Database connected successfully")
+        # PyMySQL connection is open by default if no error occurs
+        print("Database connected successfully")
 
         return conn
 
@@ -122,7 +123,7 @@ def profile():
     
     user_id = session.get("user_id")
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
     
     cursor.execute("SELECT full_name, email, mobile, dob FROM register WHERE id = %s", (user_id,))
     user_data = cursor.fetchone()
@@ -167,7 +168,7 @@ def health_check():
     status = {"status": "ok", "database": "unknown"}
     try:
         conn = get_db_connection()
-        if conn and conn.is_connected():
+        if conn:
             status["database"] = "connected"
             conn.close()
         else:
@@ -362,7 +363,7 @@ def register():
         }), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     # -----------------------------
     # 8️⃣ Check if Email Already Exists
@@ -441,7 +442,7 @@ def login():
             "message": "The system is currently unable to connect to the database. Please ensure your database server is running."
         }), 503
 
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     # -----------------------------
     # 3️⃣ Check if User Exists
@@ -521,7 +522,7 @@ def forgot_password():
         }), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     cursor.execute("SELECT id FROM register WHERE email = %s", (email,))
     user = cursor.fetchone()
@@ -597,7 +598,7 @@ def verify_otp():
         return jsonify({"status": "error", "message": "Session expired"}), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     cursor.execute(
         "SELECT otp, otp_expiry FROM register WHERE email=%s",
@@ -712,7 +713,7 @@ def reset_password():
 @app.route("/daily-tip", methods=["GET"])
 def daily_tip():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     # 1️⃣ Get today's date
     today = datetime.now().date()
@@ -768,7 +769,7 @@ def daily_tip():
 @app.route("/daily-term", methods=["GET"])
 def daily_term():
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     today = datetime.now().date()
 
@@ -922,7 +923,7 @@ def get_goals():
         }), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     try:
         cursor.execute("""
@@ -955,7 +956,7 @@ def get_goals():
 @app.route("/get-goal/<int:goal_id>", methods=["GET"])
 def get_goal_by_id(goal_id):
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     try:
         cursor.execute("SELECT goal_name, target_amount, already_saved_amount, deadline FROM goals WHERE id = %s", (goal_id,))
@@ -1023,7 +1024,7 @@ def update_goal(goal_id):
             return jsonify({"status": "error", "message": "Deadline must be YYYY-MM-DD format"}), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     # Check if goal exists by id only
     cursor.execute("SELECT id FROM goals WHERE id = %s", (goal_id,))
@@ -1079,7 +1080,7 @@ def update_goal(goal_id):
 def delete_goal(goal_id):
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     # Check if goal exists
     cursor.execute("SELECT id FROM goals WHERE id = %s", (goal_id,))
@@ -1127,7 +1128,7 @@ def update_extra_amount(goal_id):
     extra_amount = float(extra_amount)
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     try:
         # Fetch target & saved from correct table: goals
@@ -1206,7 +1207,7 @@ def withdraw_amount(goal_id):
     withdraw_amount = float(withdraw_amount)
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     try:
         # Fetch saved amount from correct table: goals
@@ -1272,7 +1273,7 @@ def withdraw_amount(goal_id):
 def get_profile(user_id):
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     cursor.execute(
         "SELECT full_name, email, mobile, dob FROM register WHERE id = %s",
@@ -1358,7 +1359,7 @@ def update_profile(user_id=None):
             }), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     # Check if user exists
     cursor.execute("SELECT * FROM register WHERE id = %s", (user_id,))
@@ -1824,7 +1825,7 @@ def get_notifications():
         return jsonify({"status": "error", "message": "user_id is required"}), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
     try:
         cursor.execute("""
             SELECT id, title, message, time_value as time, type, is_unread 
@@ -1865,7 +1866,7 @@ def process_notifications():
     
     conn = get_db_connection()
     if not conn: return
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
     try:
         # Daily Reminders
         cursor.execute("""
@@ -1919,7 +1920,7 @@ def debug_notifications():
     from datetime import datetime # Import datetime here as well for this function
     conn = get_db_connection()
     if not conn: return jsonify({"error": "DB connection failed"}), 500
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
     try:
         cursor.execute("SELECT * FROM user_notifications")
         user_notifs = cursor.fetchall()
