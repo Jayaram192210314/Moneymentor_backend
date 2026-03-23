@@ -31,7 +31,7 @@ def get_db_connection():
         conn = pymysql.connect(
             host="localhost",
             user="root",
-            password="Simats@123",
+            password="",
             database="elearning_db",
             cursorclass=pymysql.cursors.DictCursor,
             connect_timeout=10
@@ -183,7 +183,7 @@ def health_check():
 # --------------------------------------------------
 # 🤖 FinBot (Gemini Chat API)
 # --------------------------------------------------
-genai.configure(api_key="AIzaSyCHri2Fr3idKk1EHcZ5f0Fg_YMXA-qRZt0")
+genai.configure(api_key="AIzaSyD3lwTy1De3tqAGNbk1m2Jb00wTX5G90ZY")
 
 finbot_system_instruction = """
 You are FinBot, an AI assistant that is strictly limited to financial topics only.
@@ -1680,7 +1680,7 @@ def get_progress(user_id):
         
         # 2. Extract into a simple list [1, 2, 5, ...]
         rows = cursor.fetchall()
-        completed_articles = [row[0] for row in rows]
+        completed_articles = [row['article_no'] for row in rows]
         cursor.close()
         conn.close()
     except Exception as e:
