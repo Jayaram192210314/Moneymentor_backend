@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 13, 2026 at 04:25 AM
+-- Generation Time: Mar 20, 2026 at 08:38 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -45,9 +45,10 @@ CREATE TABLE `goals` (
 
 INSERT INTO `goals` (`id`, `user_id`, `goal_name`, `target_amount`, `already_saved_amount`, `deadline`, `extra_amount`, `withdraw_amount`, `created_at`) VALUES
 (1, 4, 'Buy Bike', 50000.00, 10000.00, '2026-03-28', 0.00, 0.00, '2026-02-27 10:24:48'),
-(2, 3, 'Car', 500000.00, 105000.00, '2027-02-27', 10000.00, 5000.00, '2026-02-27 10:30:42'),
-(3, 3, 'New Car', 100000.00, 10000.00, '2026-03-31', 0.00, 0.00, '2026-03-05 14:38:35'),
-(7, 7, 'Thar Repair', 50000.00, 10000.00, '2026-03-31', 0.00, 0.00, '2026-03-12 04:39:40');
+(2, 3, 'Car', 500000.00, 100000.00, '2027-02-27', 10000.00, 5000.00, '2026-02-27 10:30:42'),
+(3, 3, 'New Car', 100000.00, 15000.00, '2026-03-31', 5000.00, 0.00, '2026-03-05 14:38:35'),
+(7, 7, 'Thar Repair', 50000.00, 10000.00, '2026-03-31', 0.00, 0.00, '2026-03-12 04:39:40'),
+(9, 7, 'Wedding Fund', 200000.00, 150000.00, '2026-05-22', 0.00, 0.00, '2026-03-18 09:18:49');
 
 -- --------------------------------------------------------
 
@@ -74,7 +75,9 @@ INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `time_value`, 
 (95, 3, 'Daily Tip', 'Check out your daily financial tip!', '8:15 AM', 'daily', 1, '2026-03-13 08:15:15'),
 (96, 3, 'Monthly Goal', 'It\'s time to update your savings goal!', '8:20 AM', 'monthly', 1, '2026-03-13 08:20:15'),
 (97, 4, 'Daily Tip', 'Check out your daily financial tip!', '8:35 AM', 'daily', 1, '2026-03-13 08:35:15'),
-(98, 4, 'Monthly Goal', 'It\'s time to update your savings goal!', '8:40 AM', 'monthly', 1, '2026-03-13 08:40:15');
+(98, 4, 'Monthly Goal', 'It\'s time to update your savings goal!', '8:40 AM', 'monthly', 1, '2026-03-13 08:40:15'),
+(99, 4, 'Daily Tip', 'Check out your daily financial tip!', '8:35 AM', 'daily', 1, '2026-03-19 08:35:55'),
+(100, 4, 'Daily Tip', 'Check out your daily financial tip!', '8:35 AM', 'daily', 1, '2026-03-20 08:35:12');
 
 -- --------------------------------------------------------
 
@@ -108,7 +111,18 @@ INSERT INTO `register` (`id`, `full_name`, `dob`, `mobile`, `email`, `password`,
 (9, 'Test Fix', '1995-05-05', '1234567890', 'testfix@example.com', 'scrypt:32768:8:1$2sDtTpprKIFrLufA$b250f07369d5896617d0b4d60bc401d529d1a7ad7a02ea5decf3d397831c1e926f3e570c76533d5a69a37adc32afb3df66c0d54394cb24539579657bd6086029', NULL, NULL),
 (10, 'Tester User', '1995-10-10', '9876543210', 'testuser@example.com', 'scrypt:32768:8:1$1ZFslU07ephc1CEw$816338bd0ba5f80b17bb574811d898a17b48771e8c55d992c525732c31b06d23b52c9ab8fd6d00cbb39654e291af9b68a502c03a4aaebcf177ff3b12ccdb26a6', NULL, NULL),
 (11, 'John Doe', '1990-01-01', '1234567890', 'john@example.com', 'scrypt:32768:8:1$bWpIEzM6TWPp6QnW$9ba3925746980254f3acd8ef46450d7850099f05fc4d683592537e68bd2573d8d212f4b98e6eabf40ef77d545723c8642d4c1a066b98feede6656404e31e88ff', NULL, NULL),
-(12, 'chotu', '2005-03-19', '9640638489', 'kousikssvv34@gmail.com', 'scrypt:32768:8:1$pn1WesPaVyNAo989$2c1f4103d91a4d033d45f6fa4e689a6ba7d53a71fa2f2fb55ce815b9f795498f7a1b0099d7726dc7903b2c87d3e640e227330ece0a8cb4e4ba53fd7c2831fd5d', NULL, NULL);
+(12, 'chotu', '2005-03-19', '9640638489', 'kousikssvv34@gmail.com', 'scrypt:32768:8:1$EfJh3uIZMNESONLJ$d58d42bbe1e6e26802c206af8f79ace48ea845ff44d4dd2b89db1a3d19336dc0551a98dc916e900ed1004fe11ee1cfb7fadaaec4762723da7497b34dbf86ff24', NULL, NULL),
+(13, 'Sandeep', '2005-02-15', '9812341230', 'sandeepkudipudi1234@gmail.com', 'scrypt:32768:8:1$puZYg97jhAh628yy$dba59a6b505938a3a9105eddcdf31ce633870efe14419168c590f74d3c887d4889d97b465663424cb095040b268aa3e9e7364886daa94de52d65ee6b145c68dc', NULL, NULL),
+(14, 'Kousik', '2005-03-19', '9640638489', 'Kousikssvv52@gmail.com', 'scrypt:32768:8:1$dfRagXaDLXR35Auz$20a1fd5da0277658a865dd90482ef34bdbdbc543bd4dd00dcec54c8392d90f386ab05ce7418cca0dfd2563225d7f235be37a519b1c97f37817db4147bdc2a854', NULL, NULL),
+(15, 'Baby Keerthi', '2005-08-18', '8019874861', 'naramreddy.keerthi@gmail.com', 'scrypt:32768:8:1$llzoJcxmynSGJEj9$4053d47354af2cd67b2f1bb6fc9e23a41e92bcc2dcd4df60a0f040c7a7d9d62e595de870a3cb4df29b5106a9d8cb81a93482c61a89c4a8f8660886cf167b1ef8', NULL, NULL),
+(16, 'Mahesh', '2005-10-08', '9381099841', 'medarametlamahesh05@gmail.com', 'scrypt:32768:8:1$uW9AHyGZKHOFfIHo$c141a5fb64b09cf7d140cdbc7be22d9d18d4a89cf64a88b47082b7d1d5c3c837314b5359bad710e44ab2e257175445de4b543dfdd58a4e04498058e4dd736651', NULL, NULL),
+(17, 'Prudhvi', '2005-10-05', '9381099841', 'prudhvireddyre60@gmail.com', 'scrypt:32768:8:1$Usq2jTBAAyMofo4F$8943541cfe8dca8d459f151a118f938f17b2190315db880e3789ad00d1c3f6e70ac1c12dd81f02efdf4ba8607230812cf3b68d70b39e14462c89fd2dbcda052a', NULL, NULL),
+(18, 'Charan', '2004-07-08', '9347185154', 'charandevalapalli@gmail.com', 'scrypt:32768:8:1$IJkWcAoLmYuonOIZ$bdabcec993af8f0320773a0e6c45298b38b4239c22e9bf3a0549f9afbbeebe5fc85be5aa00e62cd385904dd0a384d70b352e8feb598eab459be21786181cf89b', NULL, NULL),
+(19, 'Hindu Priya', '2005-06-22', '7386020155', 'hindurpriya@gmail.com', 'scrypt:32768:8:1$0AcBxGTrM0t4Lseh$334ed2fd935f0d8fdc1f561f2f801f4265e82062624b48878a76b2012353b6e0559820afde5e402b6e9404d487050366f376807cd4407d1adda3c9953d30c76d', NULL, NULL),
+(20, 'Sri Vidhya', '2005-07-20', '7093477106', 'srividyamarisetty@gmail.com', 'scrypt:32768:8:1$06c42H8KmRVwKfkC$d9a2fdb382086b3802935b9d7282222501ec4eb6151e33a614f113c52d69b6528643a1c1742d03f24a46482e9ed822cbc2b28f182a6739d878993365a7b40987', NULL, NULL),
+(21, 'Maheswara Deepak', '2026-03-10', '9014496919', 'maheswaradeepak3@gmail.com', 'scrypt:32768:8:1$SmO0bJOkKY4luLGt$6244ec1d5e145ba781b2ab66240c56d0f4a5273540ccc13f8ed5c23fd654764d8dc32302d24dcf2007b478223b8159bb00be18780a0cd0d6c6730ed05a2c28d7', NULL, NULL),
+(22, 'Naga Kavya', '2004-09-14', '8143907224', 'kavyanaga148@gmail.com', 'scrypt:32768:8:1$R13D5LLjGi2vsVSI$62b51e403388b6feab4f04ec05b21192fc5cfbf1a3a030fba68e744713321597d1c1d5ba2536dc7755cff7042bcbce3afeb8825939369c829f1988ac06f86ff9', NULL, NULL),
+(23, 'Prasadula Pavan', '2003-06-17', '7095834576', 'prasadulapavan@gmail.com', 'scrypt:32768:8:1$5c1LrtriLVYbeTUg$6e712f133a786f6d319c0bcd3135ca4ac0906a4eefce095fc7662ff74417f12ca348f98d3342f9827980e6404eb3cf4604adf1162090ab25781ccc33ad5ba4b5', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -250,7 +264,9 @@ INSERT INTO `term_history` (`id`, `term_id`, `shown_date`) VALUES
 (5, 10, '2026-03-05'),
 (6, 33, '2026-03-10'),
 (7, 17, '2026-03-11'),
-(8, 76, '2026-03-12');
+(8, 76, '2026-03-12'),
+(9, 59, '2026-03-18'),
+(10, 92, '2026-03-19');
 
 -- --------------------------------------------------------
 
@@ -396,7 +412,10 @@ INSERT INTO `tip_history` (`id`, `tip_id`, `shown_date`) VALUES
 (9, 70, '2026-03-10'),
 (10, 17, '2026-03-11'),
 (11, 9, '2026-03-12'),
-(12, 2, '2026-03-13');
+(12, 2, '2026-03-13'),
+(13, 71, '2026-03-18'),
+(14, 22, '2026-03-19'),
+(15, 27, '2026-03-20');
 
 -- --------------------------------------------------------
 
@@ -465,7 +484,8 @@ INSERT INTO `user_article_progress` (`id`, `user_id`, `article_no`, `is_complete
 (51, 7, 25, 1, '2026-03-12 13:25:43'),
 (52, 7, 26, 1, '2026-03-12 14:13:16'),
 (53, 7, 27, 1, '2026-03-12 14:39:30'),
-(54, 7, 28, 1, '2026-03-12 20:59:51');
+(54, 7, 28, 1, '2026-03-12 20:59:51'),
+(55, 7, 29, 1, '2026-03-19 21:15:13');
 
 -- --------------------------------------------------------
 
@@ -563,19 +583,19 @@ ALTER TABLE `user_notifications`
 -- AUTO_INCREMENT for table `goals`
 --
 ALTER TABLE `goals`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
 
 --
 -- AUTO_INCREMENT for table `register`
 --
 ALTER TABLE `register`
-  MODIFY `id` int(190) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(190) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `terms`
@@ -587,7 +607,7 @@ ALTER TABLE `terms`
 -- AUTO_INCREMENT for table `term_history`
 --
 ALTER TABLE `term_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `tips`
@@ -599,13 +619,13 @@ ALTER TABLE `tips`
 -- AUTO_INCREMENT for table `tip_history`
 --
 ALTER TABLE `tip_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `user_article_progress`
 --
 ALTER TABLE `user_article_progress`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `user_notifications`

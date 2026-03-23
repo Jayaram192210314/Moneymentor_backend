@@ -32,7 +32,8 @@ def get_db_connection():
             user="root",
             password="",   # default XAMPP password is empty
             database="elearning_db",
-            connect_timeout=5  # Add timeout to prevent hanging
+            auth_plugin='mysql_native_password', # Fallback for some environments
+            connect_timeout=10
         )
 
         if conn.is_connected():
